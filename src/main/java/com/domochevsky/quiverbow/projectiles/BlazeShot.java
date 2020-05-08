@@ -14,6 +14,10 @@ import net.minecraft.world.World;
 import com.domochevsky.quiverbow.Helper;
 import com.domochevsky.quiverbow.net.NetHelper;
 
+//new imports
+import net.minecraft.util.BlockPos;
+
+
 public class BlazeShot extends _ProjectileBase
 {
 	public BlazeShot(World world) { super(world); }
@@ -55,13 +59,13 @@ public class BlazeShot extends _ProjectileBase
         }
         else
         {        	
-        	Block block = this.worldObj.getBlock(hitPos.blockX, hitPos.blockY, hitPos.blockZ);
+        	Block block = this.worldObj.getBlockState(hitPos.getBlockPos()).getBlock();
         	
         	// Let's melt ice on contact
             if (block == Blocks.ice) 
             { 
-            	this.worldObj.setBlock(hitPos.blockX, hitPos.blockY, hitPos.blockZ, Blocks.flowing_water, 0, 3); 
-            	this.targetsHit += 1;
+            	this.worldObj.setBlockState(hitPos.getBlockPos(), Blocks.flowing_water.getDefaultState()); //setBlock(hitPos.x/y/z, Blocks.flowing_water, 0, 3)
+            	this.targetsHit += 1; //setBlockState seemingly replaces setBlock. There is one optional "flags" int, but I don't know what it does.
             }
             
             // Glass breaking, through 4 layers
@@ -69,12 +73,12 @@ public class BlazeShot extends _ProjectileBase
             else	// Either didn't manage to break that block or we already hit 4 things
             {
         	
-            	this.stuckBlockX = hitPos.blockX;
+            	/* this.stuckBlockX = hitPos.blockX;
                 this.stuckBlockY = hitPos.blockY;
-                this.stuckBlockZ = hitPos.blockZ;
+                this.stuckBlockZ = hitPos.blockZ; */ //I can probably just replace this entirely with the line below?
                 
-                this.stuckBlock = this.worldObj.getBlock(this.stuckBlockX, this.stuckBlockY, this.stuckBlockZ);
-                this.inData = this.worldObj.getBlockMetadata(this.stuckBlockX, this.stuckBlockY, this.stuckBlockZ);
+                this.stuckBlock = this.worldObj.getBlockState(hitPos.getBlockPos()).getBlock();
+                this.inBlockState = this.worldObj.getBlockState(hitPos.getBlockPos());
                 
                 this.motionX = (double)((float)(hitPos.hitVec.xCoord - this.posX));
                 this.motionY = (double)((float)(hitPos.hitVec.yCoord - this.posY));
@@ -92,7 +96,7 @@ public class BlazeShot extends _ProjectileBase
 
                 if (this.stuckBlock.getMaterial() != Material.air)
                 {
-                    this.stuckBlock.onEntityCollidedWithBlock(this.worldObj, this.stuckBlockX, this.stuckBlockY, this.stuckBlockZ, this);
+                    this.stuckBlock.onEntityCollidedWithBlock(this.worldObj, hitPos.getBlockPos(), this);
                 }
             }
         }
@@ -127,13 +131,14 @@ public class BlazeShot extends _ProjectileBase
 		int x = (int) this.posX;
 		int y = (int) this.posY;
 		int z = (int) this.posZ;
+		BlockPos posAll = new BlockPos(x, y, z);
 		
-		Block hitBlock = this.worldObj.getBlock(x, y, z);
+		Block hitBlock = this.worldObj.getBlockState(posAll).getBlock();
 		
 		if (hitBlock == Blocks.water || hitBlock == Blocks.flowing_water)
 		{
 			// Hit a (flowing) water block, so turning that into ice now
-			this.worldObj.setBlockToAir(x, y, z);
+			this.worldObj.setBlockToAir(posAll);
 			
 			// SFX
 			NetHelper.sendParticleMessageToAllPlayers(this.worldObj, this.getEntityId(), (byte) 3, (byte) 4);

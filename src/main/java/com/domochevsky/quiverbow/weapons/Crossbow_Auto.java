@@ -19,10 +19,10 @@ import com.domochevsky.quiverbow.Main;
 import com.domochevsky.quiverbow.ammo.ArrowBundle;
 import com.domochevsky.quiverbow.projectiles.RegularArrow;
 
-import cpw.mods.fml.common.event.FMLPreInitializationEvent;
-import cpw.mods.fml.common.registry.GameRegistry;
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
+import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
+import net.minecraftforge.fml.common.registry.GameRegistry;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 
 public class Crossbow_Auto extends _WeaponBase
 {
@@ -101,18 +101,18 @@ public class Crossbow_Auto extends _WeaponBase
 
 	private boolean getChambered(ItemStack stack)
 	{
-		if (stack.stackTagCompound == null) { return false; }	// Doesn't have a tag
+		if (stack.getTagCompound() == null) { return false; }	// Doesn't have a tag
 
-		return stack.stackTagCompound.getBoolean("isChambered");
+		return stack.getTagCompound().getBoolean("isChambered");
 	}
 
 
 	private void setChambered(ItemStack stack, World world, Entity entity, boolean toggle)
 	{
-		if (stack.stackTagCompound == null) { stack.setTagCompound(new NBTTagCompound()); }	// Init
+		if (stack.getTagCompound() == null) { stack.setTagCompound(new NBTTagCompound()); }	// Init
 
-		stack.stackTagCompound.setBoolean("isChambered", toggle);	// Done, we're good to go again
-
+		stack.getTagCompound().setBoolean("isChambered", toggle);	// Done, we're good to go again
+						//hopefully this works as intended (changing direct stackTagCompound references to a getter) but C has muddled my brain
 		// SFX
 		world.playSoundAtEntity(entity, "random.click", 0.8F, 0.5F);
 	}

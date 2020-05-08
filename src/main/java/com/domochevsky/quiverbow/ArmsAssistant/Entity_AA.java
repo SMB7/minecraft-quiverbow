@@ -87,6 +87,7 @@ public class Entity_AA extends EntityLiving
 	public double waypointZ;
 	
 	public int courseChangeCooldown;	// Doing it like ghasts
+	private float defaultPitch = 0; //Used by idle turrets looking around, apparently disappeared from a superclass in 1.8 so I defined it here. (I hope 0 is right lol)
 	
 
 	public Entity_AA(World world) // Generic, for use on client side
@@ -95,8 +96,8 @@ public class Entity_AA extends EntityLiving
 		this.renderDistanceWeight = 10.0d;
 		
 		this.height = 1.65f;
-		this.boundingBox.setBounds(-0.5d, 0.0d, -0.5d, 0.5d, this.height, 0.5d);
-		
+		this.setEntityBoundingBox(AxisAlignedBB.fromBounds(-0.5d, 0.0d, -0.5d, 0.5d, this.height, 0.5d)); //this.boundingBox.setBounds
+		//boundingBox is now private, setEntityBoundingBox should be used instead (I hope lol)
 		this.setCanPickUpLoot(false);
 		
 		this.getEntityAttribute(SharedMonsterAttributes.movementSpeed).setBaseValue(this.movementSpeed);
@@ -113,7 +114,7 @@ public class Entity_AA extends EntityLiving
 		
 		if (player != null)
 		{
-			this.ownerName = player.getDisplayName();
+			this.ownerName = player.getDisplayName().toString();
 			
 			this.setPositionAndRotation(player.posX, player.posY, player.posZ, player.cameraYaw, player.cameraPitch);
 			this.worldObj.playSoundAtEntity(this, "random.anvil_land", 0.7f, 1.5f);
@@ -124,7 +125,7 @@ public class Entity_AA extends EntityLiving
 		}
 		
 		this.height = 1.65f;
-		this.boundingBox.setBounds(-0.5d, 0.0d, -0.5d, 0.5d, this.height, 0.5d);
+		this.setEntityBoundingBox(AxisAlignedBB.fromBounds(-0.5d, 0.0d, -0.5d, 0.5d, this.height, 0.5d));
 		
 		this.setCanPickUpLoot(false);
 		
@@ -140,8 +141,8 @@ public class Entity_AA extends EntityLiving
     }
 	
 	
-	@Override
-	protected boolean isAIEnabled() { return true; }
+
+	private boolean isAIDisabled() { return false; } //isAIEnabled was apparently changed to isAIDisabled, and was made private, so no override is necessary
 	
 	@Override
 	public float getAIMoveSpeed() { return (float) this.movementSpeed; }
@@ -156,7 +157,7 @@ public class Entity_AA extends EntityLiving
 	
 	
 	@Override
-	public AxisAlignedBB getCollisionBox(Entity entity) { return this.boundingBox; }
+	public AxisAlignedBB getCollisionBox(Entity entity) { return this.getBoundingBox(); }
 
 	
 	@Override
@@ -176,7 +177,7 @@ public class Entity_AA extends EntityLiving
 		this.tickWeapons();
 		this.useCommunication();
 		
-		this.updateEntityActionState();
+		this.updateEntityRidingAndLooking();
 		this.rotationYawHead = this.rotationYaw;
 		
 		AI_Targeting.targetNearestEntity(this);	// Target whoever's closest
@@ -290,8 +291,8 @@ public class Entity_AA extends EntityLiving
 						}
 						else	// Hit a block
 						{
-							this.faceTargetBlock(movPos.blockX, movPos.blockY, movPos.blockZ);
-						}
+							this.faceTargetBlock(movPos.getBlockPos().getX(), movPos.getBlockPos().getY(), movPos.getBlockPos().getZ());
+						}	//the usual "positions are now stored as objects instead of individual doubles" thing
 					}
 					// else, not looking at anything tangible, hm?
 					
@@ -349,7 +350,7 @@ public class Entity_AA extends EntityLiving
         }
         else
         {
-            distanceY = (target.boundingBox.minY + target.boundingBox.maxY) / 2.0D + VelY - (this.posY + (double) this.getEyeHeight());
+            distanceY = (target.getBoundingBox().minY + target.getBoundingBox().maxY) / 2.0D + VelY - (this.posY + (double) this.getEyeHeight());
         }
 
         double distanceSqr = (double)MathHelper.sqrt_double(distanceX * distanceX + distanceZ * distanceZ);
@@ -389,9 +390,9 @@ public class Entity_AA extends EntityLiving
     }
 	
 	
-	@Override
-	protected void updateEntityActionState()
-    {
+
+	protected void updateEntityRidingAndLooking() 	//EntityLiving.updateEntityActionState() is now final and cannot be overridden, but hopefully I can just rename this
+    {												//and it'll still do its job (since it calls the function it was overriding anyway, and is itself called in onLivingUpdate).
 		if (this.hasRidingUpgrade && this.riddenByEntity != null) // Not looking around idle, since we're being ridden
 		{ 
 			EntityLivingBase rider = (EntityLivingBase) this.riddenByEntity;
@@ -413,7 +414,7 @@ public class Entity_AA extends EntityLiving
         if (this.rand.nextFloat() < 0.05F) { this.randomYawVelocity = (this.rand.nextFloat() - 0.5F) * 20.0F; }
 
         this.rotationYaw += this.randomYawVelocity;
-        this.rotationPitch = this.defaultPitch;
+        this.rotationPitch = this.defaultPitch ;
 
         if (this.isInWater() || this.handleLavaMovement()) { this.isJumping = this.rand.nextFloat() < 0.8F; }
     }
@@ -447,7 +448,7 @@ public class Entity_AA extends EntityLiving
     {
 		if (this.worldObj.isRemote) { return true; }	// Client side. Doesn't have the same info, so makes a different decision. Ugh.
 														// They'll just shoot when trying to equip this with a weapon
-		if (!player.getDisplayName().equals(this.ownerName)) { return false; }	// Not the owner, so not doing this
+		if (!player.getDisplayName().toString().equals(this.ownerName)) { return false; }	// Not the owner, so not doing this
 		
 		ItemStack itemstack = player.inventory.getCurrentItem();
 		
@@ -542,7 +543,7 @@ public class Entity_AA extends EntityLiving
         }
         
         this.dead = true;
-        this.func_110142_aN().func_94549_h();
+        this.getCombatTracker().func_94549_h(); //getCombatTracker was func_110142_aN
 
         this.worldObj.setEntityState(this, (byte) 3);
     }
@@ -565,7 +566,7 @@ public class Entity_AA extends EntityLiving
 	@Override
 	protected void damageEntity(DamageSource dmgSource, float dmg)
     {
-		if (this.isEntityInvulnerable()) { return; }	// Nothing to be done here
+		if (this.isEntityInvulnerable(dmgSource)) { return; }	// Nothing to be done here
         
         dmg = ForgeHooks.onLivingHurt(this, dmgSource, dmg);
         if (dmg <= 0) return;
@@ -593,7 +594,7 @@ public class Entity_AA extends EntityLiving
         {
             float health = this.getHealth();
             this.setHealth(health - dmg);
-            this.func_110142_aN().func_94547_a(dmgSource, health, dmg);
+            this.getCombatTracker().func_94547_a(dmgSource, health, dmg);
             this.setAbsorptionAmount(this.getAbsorptionAmount() - dmg);
         }
         // else, damage is 0. Nothing to be done here

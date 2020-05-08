@@ -5,7 +5,7 @@ import io.netty.buffer.ByteBuf;
 import com.domochevsky.quiverbow.Helper;
 import com.domochevsky.quiverbow.net.NetHelper;
 
-import cpw.mods.fml.common.registry.IEntityAdditionalSpawnData;
+import net.minecraftforge.fml.common.registry.IEntityAdditionalSpawnData;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.entity.Entity;
@@ -14,6 +14,10 @@ import net.minecraft.init.Blocks;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.world.World;
+
+//new imports
+import net.minecraft.block.state.IBlockState;
+
 
 public class RedLight extends _ProjectileBase implements IEntityAdditionalSpawnData
 {
@@ -64,28 +68,28 @@ public class RedLight extends _ProjectileBase implements IEntityAdditionalSpawnD
 		{
 			// Let's blast through terrain on hit
 			
-			int x = target.blockX;
+			/* int x = target.blockX;
 			int y = target.blockY;
-			int z = target.blockZ;
+			int z = target.blockZ; */
 			
-			Block toBeBroken = this.worldObj.getBlock(x, y, z);
-			int meta = this.worldObj.getBlockMetadata(x, y, z);
+			IBlockState blockState = this.worldObj.getBlockState(target.getBlockPos());
+			Block toBeBroken = blockState.getBlock();
 			
 			boolean breakThis = true;
 			
-			if (toBeBroken.getHarvestLevel(meta) > 1) 
+			if (toBeBroken.getHarvestLevel(blockState) > 1) 
 			{ 
 				breakThis = false; 
 				this.targetsHit += 1;	// Thicker materials
 			}
 			
-			if (toBeBroken.getHarvestLevel(meta) > 2) 
+			if (toBeBroken.getHarvestLevel(blockState) > 2) 
 			{ 
 				breakThis = false; 
 				this.targetsHit += 2;	// Even thicker materials
 			}
 			
-			if (toBeBroken.getHarvestLevel(meta) > 3) 
+			if (toBeBroken.getHarvestLevel(blockState) > 3) 
 			{ 
 				breakThis = false; 
 				this.targetsHit += 3;	// Super thick material

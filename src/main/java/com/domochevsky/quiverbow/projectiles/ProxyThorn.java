@@ -53,18 +53,18 @@ public class ProxyThorn extends _ProjectileBase
 			} 
 			else	// Didn't manage to break that block, so we're stuck now for a short while
 			{
-				this.stuckBlockX = movPos.blockX;
+				/* this.stuckBlockX = movPos.blockX;
 				this.stuckBlockY = movPos.blockY;
-				this.stuckBlockZ = movPos.blockZ;
+				this.stuckBlockZ = movPos.blockZ; */
 				
-				this.stuckBlock = this.worldObj.getBlock(this.stuckBlockX, this.stuckBlockY, this.stuckBlockZ);
-				this.inData = this.worldObj.getBlockMetadata(this.stuckBlockX, this.stuckBlockY, this.stuckBlockZ);
+				this.inBlockState = this.worldObj.getBlockState(movPos.getBlockPos());
+				this.stuckBlock = this.inBlockState.getBlock();
 				
 				this.motionX = movPos.hitVec.xCoord - this.posX;
 				this.motionY = movPos.hitVec.yCoord - this.posY;
 				this.motionZ = movPos.hitVec.zCoord - this.posZ;
 				
-				this.hitSide = movPos.sideHit;	// Keeping track of the side we hit, for when we go boom
+				this.hitSide = movPos.sideHit.getIndex();	// Keeping track of the side we hit, for when we go boom
 				
 				float distance = MathHelper.sqrt_double(this.motionX * this.motionX + this.motionY * this.motionY + this.motionZ * this.motionZ);
 				
@@ -78,11 +78,11 @@ public class ProxyThorn extends _ProjectileBase
 				
 				if (this.stuckBlock.getMaterial() != Material.air)
 				{
-					this.stuckBlock.onEntityCollidedWithBlock(this.worldObj, this.stuckBlockX, this.stuckBlockY, this.stuckBlockZ, this);
+					this.stuckBlock.onEntityCollidedWithBlock(this.worldObj, movPos.getBlockPos(), this);
 				}
 			}
 			
-			this.boundingBox.setBounds(-0.2d, 0.0d, -0.2d, 0.2d, 0.2d, 0.2d);	// Attackable
+			this.setEntityBoundingBox(AxisAlignedBB.fromBounds(-0.2d, 0.0d, -0.2d, 0.2d, 0.2d, 0.2d));	// Attackable
 		}
     	
 		// SFX
@@ -117,7 +117,7 @@ public class ProxyThorn extends _ProjectileBase
 		this.proxyDelay = 20;	// Reset
 		
 		// Go time
-		AxisAlignedBB box = this.boundingBox.expand(this.triggerDistance, this.triggerDistance, this.triggerDistance);
+		AxisAlignedBB box = this.getBoundingBox().expand(this.triggerDistance, this.triggerDistance, this.triggerDistance);
 		List list = this.worldObj.getEntitiesWithinAABB(EntityLivingBase.class, box);
 		
 		Entity potentialEntity;

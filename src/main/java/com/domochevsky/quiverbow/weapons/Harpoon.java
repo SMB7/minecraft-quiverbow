@@ -16,3 +16,4 @@ something")
 [02:51:49] <Jindra34> (True, just need a material to act as a 'reflector' for the pearl)
  */
 }
+//SM note: I'm probably too lazy/inexperienced to code it myself but I like the sound of this

@@ -9,6 +9,10 @@ import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.world.World;
 
+//new imports
+import net.minecraft.util.EnumParticleTypes;
+
+
 public class RedSpray extends _ProjectileBase
 {	
 	public ShotPotion pot1;
@@ -46,7 +50,7 @@ public class RedSpray extends _ProjectileBase
     	
 		// SFX
     	this.worldObj.playSoundAtEntity(this, "random.fizz", 0.7F, 1.5F);
-    	this.worldObj.spawnParticle("redstone", this.posX, this.posY + 0.5D, this.posZ, 0.0D, 0.0D, 0.0D);
+    	this.worldObj.spawnParticle(EnumParticleTypes.valueOf("redstone"), this.posX, this.posY + 0.5D, this.posZ, 0.0D, 0.0D, 0.0D);
     	
     	this.setDead();		// We've hit something, so begone with the projectile
 	}

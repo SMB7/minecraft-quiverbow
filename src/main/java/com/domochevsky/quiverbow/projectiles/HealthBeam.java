@@ -6,7 +6,7 @@ import com.domochevsky.quiverbow.Helper;
 import com.domochevsky.quiverbow.ShotPotion;
 import com.domochevsky.quiverbow.net.NetHelper;
 
-import cpw.mods.fml.common.registry.IEntityAdditionalSpawnData;
+import net.minecraftforge.fml.common.registry.IEntityAdditionalSpawnData;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.potion.Potion;
@@ -58,7 +58,7 @@ public class HealthBeam extends _ProjectileBase implements IEntityAdditionalSpaw
         
         this.setPosition(this.posX, this.posY, this.posZ);
         
-        this.yOffset = 0.0F;
+        //this.yOffset = 0.0F; //again, not sure what this used to do, hopefully nothing breaks(tm)
         
         this.motionX = (double) (-MathHelper.sin(this.rotationYaw / 180.0F * (float) Math.PI) * MathHelper.cos(this.rotationPitch / 180.0F * (float)Math.PI));
         this.motionZ = (double) (MathHelper.cos(this.rotationYaw / 180.0F * (float) Math.PI) * MathHelper.cos(this.rotationPitch / 180.0F * (float)Math.PI));

@@ -5,6 +5,7 @@ import com.domochevsky.quiverbow.net.NetHelper;
 import net.minecraft.block.material.Material;
 import net.minecraft.entity.Entity;
 import net.minecraft.init.Blocks;
+import net.minecraft.util.EnumFacing;
 import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.world.World;
 
@@ -40,14 +41,14 @@ public class WebShot extends _ProjectileBase
         {
     		posiX = target.blockX;
     		posiY = target.blockY;
-    		posiZ = target.blockZ;
+    		posiZ = target.blockZ; //may or may not have fucked up by just commenting these out, i didn't realize what they were for. oops
     		
-    		if (target.sideHit == 0) { plusY = -1; } // Bottom
-    		else if (target.sideHit == 1) { plusY = 1; } // Top
-    		else if (target.sideHit == 2) { plusZ = -1; } // East
-    		else if (target.sideHit == 3) { plusZ = 1; } // West
-    		else if (target.sideHit == 4) { plusX = -1; } // North
-    		else if (target.sideHit == 5) { plusX = 1; } // South
+    		if (target.sideHit == EnumFacing.getFront(0)) { plusY = -1; } // Bottom
+    		else if (target.sideHit == EnumFacing.getFront(1)) { plusY = 1; } // Top
+    		else if (target.sideHit == EnumFacing.getFront(2)) { plusZ = -1; } // East
+    		else if (target.sideHit == EnumFacing.getFront(3)) { plusZ = 1; } // West
+    		else if (target.sideHit == EnumFacing.getFront(4)) { plusX = -1; } // North
+    		else if (target.sideHit == EnumFacing.getFront(5)) { plusX = 1; } // South
         }
 		
 		// Is the space free?

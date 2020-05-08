@@ -70,7 +70,7 @@ public class Sabot_Arrow extends _ProjectileBase
 	@Override
     public boolean attackEntityFrom(DamageSource source, float par2) // Big rockets can be swatted out of the way with a bit of expertise
     {
-    	if (this.isEntityInvulnerable()) { return false; }
+    	if (this.isEntityInvulnerable(source)) { return false; }
         else	// Not invulnerable
         {
             this.setBeenAttacked();

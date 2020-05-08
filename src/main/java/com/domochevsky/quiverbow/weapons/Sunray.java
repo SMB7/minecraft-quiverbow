@@ -18,10 +18,14 @@ import com.domochevsky.quiverbow.Helper;
 import com.domochevsky.quiverbow.Main;
 import com.domochevsky.quiverbow.projectiles.SunLight;
 
-import cpw.mods.fml.common.event.FMLPreInitializationEvent;
-import cpw.mods.fml.common.registry.GameRegistry;
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
+import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
+import net.minecraftforge.fml.common.registry.GameRegistry;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
+
+//new imports
+import net.minecraft.util.BlockPos;
+
 
 public class Sunray extends _WeaponBase
 {
@@ -98,7 +102,8 @@ public class Sunray extends _WeaponBase
 	{
 		if (world.isRemote) { return; }	// Not doing this on client side
 		
-		int light = world.getBlockLightValue((int) entity.posX, (int) entity.posY + 1, (int) entity.posZ);
+		BlockPos pos = new BlockPos((int)entity.posX, (int)entity.posY + 1, (int)entity.posZ);
+		int light = world.getLight(pos); //getBlockLightValue((int) entity.posX, (int) entity.posY + 1, (int) entity.posZ);
    		
    		if (light >= this.LightMin) 
    		{ 
@@ -122,7 +127,7 @@ public class Sunray extends _WeaponBase
 	{
 	    super.addInformation(stack, player, list, par4);
 	    
-	    if (stack.stackTagCompound != null)
+	    if (stack.getTagCompound() != null)
 	    {
 	    	double dur = (1d / Cooldown) * (Cooldown - this.getCooldown(stack));
 	    	double displayDur = (dur * 100);	// Casting to int. We only need the full digits

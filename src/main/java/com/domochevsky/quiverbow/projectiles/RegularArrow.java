@@ -103,12 +103,12 @@ public class RegularArrow extends _ProjectileBase implements IProjectile
         	if (Helper.tryBlockBreak(this.worldObj, this, hitPos, 1) && this.targetsHit < 1) { this.targetsHit += 1; } // Going straight through glass
             else	// Either didn't manage to break that block or we already hit a thing
             {
-		        this.stuckBlockX = hitPos.blockX;
+		        /* this.stuckBlockX = hitPos.blockX;
 		        this.stuckBlockY = hitPos.blockY;
-		        this.stuckBlockZ = hitPos.blockZ;
+		        this.stuckBlockZ = hitPos.blockZ; */
 		        
-		        this.stuckBlock = this.worldObj.getBlock(this.stuckBlockX, this.stuckBlockY, this.stuckBlockZ);
-		        this.inData = this.worldObj.getBlockMetadata(this.stuckBlockX, this.stuckBlockY, this.stuckBlockZ);
+		        this.inBlockState = this.worldObj.getBlockState(hitPos.getBlockPos());
+		        this.stuckBlock = inBlockState.getBlock();
 		        
 		        this.motionX = (double)((float)(hitPos.hitVec.xCoord - this.posX));
 		        this.motionY = (double)((float)(hitPos.hitVec.yCoord - this.posY));
@@ -129,7 +129,7 @@ public class RegularArrow extends _ProjectileBase implements IProjectile
 		
 		        if (this.stuckBlock.getMaterial() != Material.air)
 		        {
-		            this.stuckBlock.onEntityCollidedWithBlock(this.worldObj, this.stuckBlockX, this.stuckBlockY, this.stuckBlockZ, this);
+		            this.stuckBlock.onEntityCollidedWithBlock(this.worldObj, hitPos.getBlockPos(), this);
 		        }
             }
         }

@@ -8,7 +8,7 @@ import net.minecraft.world.World;
 
 import com.domochevsky.quiverbow.net.NetHelper;
 
-import cpw.mods.fml.common.registry.IEntityAdditionalSpawnData;
+import net.minecraftforge.fml.common.registry.IEntityAdditionalSpawnData;
 
 public class EnderAccelerator extends _ProjectileBase implements IEntityAdditionalSpawnData
 {

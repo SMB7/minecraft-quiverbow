@@ -12,11 +12,16 @@ import net.minecraft.util.Vec3;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldSettings;
 import net.minecraftforge.common.ForgeHooks;
-import net.minecraftforge.event.world.BlockEvent;
+import net.minecraftforge.event.world.BlockEvent; //unused?
 
 import com.domochevsky.quiverbow.net.NetHelper;
 
-import cpw.mods.fml.common.registry.IEntityAdditionalSpawnData;
+import net.minecraftforge.fml.common.registry.IEntityAdditionalSpawnData;
+
+//new imports
+import net.minecraft.block.state.IBlockState;
+import net.minecraft.util.EnumParticleTypes;
+
 
 public class FlintDust extends _ProjectileBase implements IEntityAdditionalSpawnData
 {	
@@ -42,8 +47,8 @@ public class FlintDust extends _ProjectileBase implements IEntityAdditionalSpawn
 	{
 		if (this.shootingEntity == null) { return; }	// Shouldn't be a thing
 		
-		Vec3 vec_entity = Vec3.createVectorHelper(this.posX, this.posY, this.posZ);
-        Vec3 vec_shooter = Vec3.createVectorHelper(this.shootingEntity.posX, this.shootingEntity.posY, this.shootingEntity.posZ);
+		Vec3 vec_entity = new Vec3 (this.posX, this.posY, this.posZ);
+        Vec3 vec_shooter = new Vec3 (this.shootingEntity.posX, this.shootingEntity.posY, this.shootingEntity.posZ);
         
         double distance = vec_entity.distanceTo(vec_shooter);	// The distance between this entity and the shooter
         
@@ -62,9 +67,9 @@ public class FlintDust extends _ProjectileBase implements IEntityAdditionalSpawn
 			target.entityHit.attackEntityFrom(DamageSource.causeThrownDamage(this, this.shootingEntity), (float)this.damage);
         }
 		else	// Hit the terrain
-    	{
-    		Block block = this.worldObj.getBlock(target.blockX, target.blockY, target.blockZ);            
-            int meta = this.worldObj.getBlockMetadata(target.blockX, target.blockY, target.blockZ);
+    	{           
+            IBlockState blockState = this.worldObj.getBlockState(target.getBlockPos());
+    		Block block = blockState.getBlock(); 
             
             boolean breakThis = true;
             
@@ -82,26 +87,26 @@ public class FlintDust extends _ProjectileBase implements IEntityAdditionalSpawn
         	else if (block.getMaterial() == Material.air) { breakThis = false; }
         	else if (block.getMaterial() == Material.portal) { breakThis = false; }
         	
-        	else if (block.getHarvestLevel(meta) > 0) { breakThis = false; }
-        	else if (block.getBlockHardness(this.worldObj, target.blockX, target.blockY, target.blockZ) > 3) { breakThis = false; }
+        	else if (block.getHarvestLevel(blockState) > 0) { breakThis = false; }
+        	else if (block.getBlockHardness(this.worldObj, target.getBlockPos()) > 3) { breakThis = false; }
         	
         	if (this.shootingEntity instanceof EntityPlayerMP)
         	{
         		WorldSettings.GameType gametype = this.worldObj.getWorldInfo().getGameType();
-            	BlockEvent.BreakEvent event = ForgeHooks.onBlockBreakEvent(this.worldObj, gametype, (EntityPlayerMP) this.shootingEntity, target.blockX, target.blockY, target.blockZ);
+            	int event = ForgeHooks.onBlockBreakEvent(this.worldObj, gametype, (EntityPlayerMP) this.shootingEntity, target.getBlockPos());
                
-            	if (event.isCanceled()) { breakThis = false; }	// Not allowed to do this
+            	if (event == -1) { breakThis = false; }	// Not allowed to do this
         	}
             
             if (breakThis)	// Nothing preventing us from breaking this block!
             {            	
-            	this.worldObj.setBlockToAir(target.blockX, target.blockY, target.blockZ);
-            	block.dropBlockAsItem(this.worldObj, target.blockX, target.blockY, target.blockZ, meta, 0);
+            	this.worldObj.setBlockToAir(target.getBlockPos());
+            	block.dropBlockAsItem(this.worldObj, target.getBlockPos(), blockState, 0);
             }
     	}
 		
 		// SFX
-		for (int i = 0; i < 4; ++i) { this.worldObj.spawnParticle("smoke", this.posX, this.posY, this.posZ, 0.0D, 0.0D, 0.0D); }
+		for (int i = 0; i < 4; ++i) { this.worldObj.spawnParticle(EnumParticleTypes.valueOf("smoke"), this.posX, this.posY, this.posZ, 0.0D, 0.0D, 0.0D); }
 		this.worldObj.playSoundAtEntity(this, Block.soundTypeGravel.getBreakSound(), 1.0F, 1.0F);
 		
 		this.setDead();	// Hit something, so begone.

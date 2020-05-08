@@ -4,6 +4,7 @@ import net.minecraft.block.material.Material;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
+import net.minecraft.util.EnumFacing;
 import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.world.World;
 
@@ -50,16 +51,16 @@ public class WaterShot extends _ProjectileBase
     		posiY = target.blockY;
     		posiZ = target.blockZ;
     		
-    		if (target.sideHit == 0) { plusY = -1; } // Bottom
-    		else if (target.sideHit == 1) { plusY = 1; } // Top
-    		else if (target.sideHit == 2) { plusZ = -1; } // East
-    		else if (target.sideHit == 3) { plusZ = 1; } // West
-    		else if (target.sideHit == 4) { plusX = -1; } // North
-    		else if (target.sideHit == 5) { plusX = 1; } // South
+    		if (target.sideHit == EnumFacing.getFront(0)) { plusY = -1; } // Bottom
+    		else if (target.sideHit == EnumFacing.getFront(1)) { plusY = 1; } // Top
+    		else if (target.sideHit == EnumFacing.getFront(2)) { plusZ = -1; } // East
+    		else if (target.sideHit == EnumFacing.getFront(3)) { plusZ = 1; } // West
+    		else if (target.sideHit == EnumFacing.getFront(4)) { plusX = -1; } // North
+    		else if (target.sideHit == EnumFacing.getFront(5)) { plusX = 1; } // South
         }
     	
     	// Nether Check
-		if (this.worldObj.provider.isHellWorld)
+		if (this.worldObj.provider.doesWaterVaporize()) //isHellWorld is now private, apparently
         {
 			this.worldObj.playSoundEffect((double)((float)this.posX + 0.5F), (double)((float)this.posY + 0.5F), (double)((float)this.posZ + 0.5F), 
 					"random.fizz", 0.5F, 2.6F + (this.worldObj.rand.nextFloat() - this.worldObj.rand.nextFloat()) * 0.8F);
@@ -70,7 +71,7 @@ public class WaterShot extends _ProjectileBase
         }
 		
 		// Is the space free?
-		if (this.worldObj.getBlock( (int)posiX + plusX, (int)posiY + plusY, (int)posiZ + plusZ).getMaterial() == Material.air)
+		if (this.worldObj.getBlock((int)posiX + plusX, (int)posiY + plusY, (int)posiZ + plusZ).getMaterial() == Material.air)
     	{
 			// Can we edit this block at all?
 			if (this.shootingEntity instanceof EntityPlayer)

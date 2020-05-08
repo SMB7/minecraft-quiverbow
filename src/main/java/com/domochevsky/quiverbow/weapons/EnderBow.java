@@ -24,10 +24,10 @@ import net.minecraftforge.event.entity.player.ArrowNockEvent;
 import com.domochevsky.quiverbow.Main;
 import com.domochevsky.quiverbow.projectiles.ScopedPredictive;
 
-import cpw.mods.fml.common.event.FMLPreInitializationEvent;
-import cpw.mods.fml.common.registry.GameRegistry;
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
+import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
+import net.minecraftforge.fml.common.registry.GameRegistry;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 
 public class EnderBow extends _WeaponBase 	// So archaic... I may have to overhaul this at some point. There's nothing standard about this
 {
@@ -154,12 +154,12 @@ public class EnderBow extends _WeaponBase 	// So archaic... I may have to overha
 	@Override
 	public void onUpdate(ItemStack stack, World world, Entity entity, int par4, boolean par5) 
 	{		
-		if (stack.stackTagCompound == null) 
+		if (stack.getTagCompound() == null) 
 		{
-			stack.stackTagCompound = new NBTTagCompound();
+			stack.setTagCompound(new NBTTagCompound());
 			
-			stack.stackTagCompound.setBoolean("isZoomed", false);
-			stack.stackTagCompound.setInteger("defaultFOV", 0);	// FOV is now using full numbers. We're recording the current default FOV here
+			stack.getTagCompound().setBoolean("isZoomed", false);
+			stack.getTagCompound().setInteger("defaultFOV", 0);	// FOV is now using full numbers. We're recording the current default FOV here
 		}
 
 		// let's check zoom here
@@ -229,7 +229,7 @@ public class EnderBow extends _WeaponBase 	// So archaic... I may have to overha
 		if (stack == null) { return; }	// Not a  valid item
 		if (!stack.hasTagCompound()) { return; } // No tag
 		
-		stack.stackTagCompound.setBoolean("isZoomed", zoom);
+		stack.getTagCompound().setBoolean("isZoomed", zoom);
 	}
 	
 	boolean isCurrentlyZoomed(ItemStack stack)
@@ -237,7 +237,7 @@ public class EnderBow extends _WeaponBase 	// So archaic... I may have to overha
 		if (stack == null) { return false; }	// Not a  valid item
 		if (!stack.hasTagCompound()) { return false; } // No tag
 		
-		return stack.stackTagCompound.getBoolean("isZoomed");
+		return stack.getTagCompound().getBoolean("isZoomed");
 	}
     
     
@@ -284,7 +284,7 @@ public class EnderBow extends _WeaponBase 	// So archaic... I may have to overha
 
    
     @Override
-    public EnumAction getItemUseAction(ItemStack par1ItemStack) { return EnumAction.bow; }
+    public EnumAction getItemUseAction(ItemStack par1ItemStack) { return EnumAction.BOW; }
     
     
     @Override
@@ -299,7 +299,7 @@ public class EnderBow extends _WeaponBase 	// So archaic... I may have to overha
     		if (this.shotCounter >= Ticks) 
     		{
     			// Only allowing this to happen when the right player uses this
-    			if (player.getDisplayName() == this.playerName)
+    			if (player.getDisplayName().toString() == this.playerName)
     			{
 	    			ScopedPredictive entityarrow = new ScopedPredictive(player.worldObj, player, 2.0F * 1.5F);
 	    			player.worldObj.spawnEntityInWorld(entityarrow);
@@ -320,7 +320,7 @@ public class EnderBow extends _WeaponBase 	// So archaic... I may have to overha
         if (player.capabilities.isCreativeMode || player.inventory.hasItemStack( new ItemStack(Items.arrow) ) )
         {
         	player.setItemInUse(stack, this.getMaxItemUseDuration(stack)); 
-        	this.playerName = player.getDisplayName();	// Recording the player name here, so only they can see the projectile
+        	this.playerName = player.getDisplayName().toString();	// Recording the player name here, so only they can see the projectile
         }
         
         return stack;
@@ -330,12 +330,12 @@ public class EnderBow extends _WeaponBase 	// So archaic... I may have to overha
     @Override
     public boolean onDroppedByPlayer(ItemStack stack, EntityPlayer player)
     {
-    	stack.stackTagCompound.setBoolean("zoom", false);	// Dropped the bow
-    	stack.stackTagCompound.setFloat("currentzoom", 0);
+    	stack.getTagCompound().setBoolean("zoom", false);	// Dropped the bow
+    	stack.getTagCompound().setFloat("currentzoom", 0);
     	
     	if (player.worldObj.isRemote) 
     	{											
-    		Minecraft.getMinecraft().gameSettings.fovSetting = stack.stackTagCompound.getFloat("zoomlevel");	// Begone with the zoom
+    		Minecraft.getMinecraft().gameSettings.fovSetting = stack.getTagCompound().getFloat("zoomlevel");	// Begone with the zoom
         }
     	
         return true;

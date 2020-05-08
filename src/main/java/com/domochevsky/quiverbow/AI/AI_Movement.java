@@ -12,6 +12,9 @@ import net.minecraft.world.World;
 
 import com.domochevsky.quiverbow.ArmsAssistant.Entity_AA;
 
+//new imports
+import net.minecraft.util.BlockPos;
+
 public class AI_Movement 
 {
 	public static void handleMovement(Entity_AA turret)
@@ -90,17 +93,26 @@ public class AI_Movement
             {
                 int blockPosX = MathHelper.floor_double(owner.posX) - 2;
                 int blockPosY = MathHelper.floor_double(owner.posZ) - 2;
-                int blockPosZ = MathHelper.floor_double(owner.boundingBox.minY);
+                int blockPosZ = MathHelper.floor_double(owner.getBoundingBox().minY);
+                BlockPos blockPosAll = new BlockPos(blockPosX, blockPosY, blockPosZ);
+                BlockPos blockPosTemp;
+                BlockPos blockPosTemp1;
+                BlockPos blockPosTemp2;
 
                 for (int counterX = 0; counterX <= 4; ++counterX)
                 {
                     for (int counterY = 0; counterY <= 4; ++counterY)
                     {
-                        if ((counterX < 1 || counterY < 1 || counterX > 3 || counterY > 3) && 
-                        		World.doesBlockHaveSolidTopSurface(turret.worldObj, blockPosX + counterX, blockPosZ - 1, blockPosY + counterY) && 
-                        		!turret.worldObj.getBlock(blockPosX + counterX, blockPosZ, blockPosY + counterY).isNormalCube() && 
-                        		!turret.worldObj.getBlock(blockPosX + counterX, blockPosZ + 1, blockPosY + counterY).isNormalCube())
-                        {
+                    	blockPosTemp = new BlockPos(blockPosX + counterX, blockPosY + counterY, blockPosZ - 1); 						//blockPosX + counterX, blockPosZ - 1, blockPosY + counterY
+                    	blockPosTemp1 = new BlockPos(blockPosX + counterX, blockPosY + counterY, blockPosZ);						//blockPosX + counterX, blockPosZ, blockPosY + counterY
+                    	blockPosTemp2 = new BlockPos(blockPosX + counterX, blockPosY + counterY, blockPosZ + 1);						//blockPosX + counterX, blockPosZ + 1, blockPosY + counterY
+                    	
+                    	if ((counterX < 1 || counterY < 1 || counterX > 3 || counterY > 3) && 											//I assumed these were bugs, but they may not be, so I'm saving them in case I need to revert it
+                        		World.doesBlockHaveSolidTopSurface(turret.worldObj, blockPosTemp) && 
+                        		!turret.worldObj.getBlockState(blockPosTemp1).getBlock().isNormalCube() && 		
+                        		!turret.worldObj.getBlockState(blockPosTemp2).getBlock().isNormalCube())	
+
+                        { //world.getBlockState(target.getBlockPos()).getBlock();
                         	turret.setLocationAndAngles((double)((float) (blockPosX + counterX) + 0.5F), 
                             		(double)blockPosZ, (double)((float)(blockPosY + counterY) + 0.5F),
                             		turret.rotationYaw, turret.rotationPitch);
@@ -156,7 +168,7 @@ public class AI_Movement
             targetZ = rangeZ;
         }
 
-        return Vec3.createVectorHelper((double)targetX, (double)targetY, (double)targetZ);
+        return new Vec3 ((double)targetX, (double)targetY, (double)targetZ);
 	}
 	
 	
@@ -204,7 +216,7 @@ public class AI_Movement
         double d5 = (aa.waypointY - aa.posY) / distanceSq;
         double d6 = (aa.waypointZ - aa.posZ) / distanceSq;
         
-        AxisAlignedBB axisalignedbb = aa.boundingBox.copy();
+        AxisAlignedBB axisalignedbb = aa.getBoundingBox(); //AxisAlignedBB axisalignedbb = aa.boundingBox.copy();
 
         for (int i = 1; (double)i < distanceSq; ++i)
         {

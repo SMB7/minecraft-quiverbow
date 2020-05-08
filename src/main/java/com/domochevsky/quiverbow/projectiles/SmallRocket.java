@@ -62,7 +62,7 @@ public class SmallRocket extends _ProjectileBase
 		}
 		else 	// Hit a block
 		{ 
-			Block block = this.worldObj.getBlock(target.blockX, target.blockY, target.blockZ);
+			Block block = this.worldObj.getBlockState(target.getBlockPos()).getBlock();
 			
 			// Glass breaking, once
 			if (Helper.tryBlockBreak(this.worldObj, this, target, 1) && this.targetsHit < 1) { this.targetsHit += 1; }
@@ -71,12 +71,12 @@ public class SmallRocket extends _ProjectileBase
 			// Let's ignite TNT explicitly here.
 			if (block == Blocks.tnt)
 			{
-				this.worldObj.setBlockToAir(target.blockX, target.blockY, target.blockZ); // setBlockToAir
+				this.worldObj.setBlockToAir(target.getBlockPos()); // setBlockToAir
                
 				EntityTNTPrimed entitytntprimed = new EntityTNTPrimed(this.worldObj, 
-                		(double)((float)target.blockX + 0.5F), 
-                		(double)((float)target.blockY + 0.5F), 
-                		(double)((float)target.blockZ + 0.5F), 
+                		(double)((float)target.getBlockPos().getX() + 0.5F), 
+                		(double)((float)target.getBlockPos().getY() + 0.5F), 
+                		(double)((float)target.getBlockPos().getZ() + 0.5F), 
                 		this.shootingEntity);									
 
                 this.worldObj.spawnEntityInWorld(entitytntprimed);			// This is TNT, so begone with that block and replace it with primed TNT

@@ -25,10 +25,16 @@ import com.domochevsky.quiverbow.Helper;
 import com.domochevsky.quiverbow.Main;
 import com.domochevsky.quiverbow.net.NetHelper;
 
-import cpw.mods.fml.common.event.FMLPreInitializationEvent;
-import cpw.mods.fml.common.registry.GameRegistry;
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
+import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
+import net.minecraftforge.fml.common.registry.GameRegistry;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
+
+//new imports
+import net.minecraft.util.BlockPos;
+import net.minecraft.util.EnumFacing;
+import net.minecraft.block.state.IBlockState;
+
 
 public class PowderKnuckle_Mod extends _WeaponBase
 {
@@ -50,10 +56,11 @@ public class PowderKnuckle_Mod extends _WeaponBase
 	}
 
 
-	@Override
-	public boolean onItemUse(ItemStack stack, EntityPlayer player, World world, int x, int y, int z, int side, float sideX, float sideY, float sideZ)
+	@Override //had to be changed to take a BlockPos and EnumFacing (the EnumFacing doesn't seem to be used?)
+	public boolean onItemUse(ItemStack stack, EntityPlayer player, World world, BlockPos pos, EnumFacing side, float sideX, float sideY, float sideZ)
 	{
 		if (world.isRemote) { return false; }	// Not doing this on client side
+		BlockPos posTemp = new BlockPos(pos.getX(), pos.getY(), pos.getZ());
 
 		// Right click
 		if (this.getDamage(stack) >= this.getMaxDamage()) { return false; }	// Not loaded
@@ -64,7 +71,7 @@ public class PowderKnuckle_Mod extends _WeaponBase
 		NetHelper.sendParticleMessageToAllPlayers(world, player.getEntityId(), (byte) 3, (byte) 4);	// smoke
 
 		// Dmg
-		world.createExplosion(player, x, y, z, (float) this.ExplosionSize, true); 	// 4.0F is TNT
+		world.createExplosion(player, pos.getX(), pos.getY(), pos.getZ(), (float) this.ExplosionSize, true); 	// 4.0F is TNT
 
 		// Mining
 		for (int xAxis = -1; xAxis <= 1; xAxis++) // Along the x axis
@@ -73,7 +80,8 @@ public class PowderKnuckle_Mod extends _WeaponBase
 			{
 				for (int zAxis = -1; zAxis <= 1; zAxis++) // Along the z axis
 				{
-					this.doMining(world, (EntityPlayerMP) player, x + xAxis, y + yAxis, z + zAxis);	// That should give me 3 iterations of each axis on every level
+					posTemp = new BlockPos(pos.getX() + xAxis, pos.getY() + yAxis, pos.getZ() + zAxis);
+					this.doMining(world, (EntityPlayerMP) player, posTemp);	// That should give me 3 iterations of each axis on every level
 				}
 			}
 		}
@@ -110,14 +118,15 @@ public class PowderKnuckle_Mod extends _WeaponBase
 	}
 
 
-	void doMining(World world, EntityPlayerMP player, int x, int y, int z)	// Calling this 27 times, to blast mine a 3x3x3 area
+	void doMining(World world, EntityPlayerMP player, BlockPos pos)	// Calling this 27 times, to blast mine a 3x3x3 area
 	{
-		Block toBeBroken = world.getBlock(x, y, z);
-		int meta = world.getBlockMetadata(x, y, z);
+		IBlockState blockState = world.getBlockState(pos);
+		Block toBeBroken = blockState.getBlock();
 
-		if (toBeBroken.getBlockHardness(world, x, y, z) == -1) { return; }	// Unbreakable
 
-		if (toBeBroken.getHarvestLevel(meta) > 1) { return; }
+		if (toBeBroken.getBlockHardness(world, pos) == -1) { return; }	// Unbreakable
+
+		if (toBeBroken.getHarvestLevel(blockState) > 1) { return; } //are there getter methods for all IBlockState-related data like this?
 		if (toBeBroken.getMaterial() == Material.water) { return; }
 		if (toBeBroken.getMaterial() == Material.lava) { return; }
 		if (toBeBroken.getMaterial() == Material.air) { return; }
@@ -136,25 +145,25 @@ public class PowderKnuckle_Mod extends _WeaponBase
 
 		//WorldSettings.GameType gametype = WorldSettings.GameType.getByName("survival");
 		WorldSettings.GameType gametype = world.getWorldInfo().getGameType();
-		BlockEvent.BreakEvent event = ForgeHooks.onBlockBreakEvent(world, gametype, player, x, y, z);
+		int event = ForgeHooks.onBlockBreakEvent(world, gametype, player, pos);
 
-		if (event.isCanceled()) { return; }	// Not allowed to do this
+		if (event == -1) { return; }	// Not allowed to do this
 
 		//toBeBroken.dropBlockAsItem(world, x, x, z, meta, 0);	// The last one is Fortune
 
-		boolean removalSuccess = world.setBlockToAir(x, y, z);
-		if (removalSuccess) { toBeBroken.onBlockDestroyedByPlayer(world, x, y, z, meta); }
+		boolean removalSuccess = world.setBlockToAir(pos);
+		if (removalSuccess) { toBeBroken.onBlockDestroyedByPlayer(world, pos, blockState); }
 
-		Item preBlockItem = toBeBroken.getItemDropped(meta, player.getRNG(), 0);
+		Item preBlockItem = toBeBroken.getItemDropped(blockState, player.getRNG(), 0);
 
 		if (preBlockItem == null) { return; }	// Item doesn't exist
 
 		ItemStack blockItem = new ItemStack(preBlockItem);
 
-		blockItem.setItemDamage(meta);
+		blockItem.setItemDamage(toBeBroken.damageDropped(blockState)); //RE: getter methods - seems like it, this may not be as hard to fix as I thought
 
-		EntityItem entityItem = new EntityItem(world, x, y + 0.5d, z, blockItem);
-		entityItem.delayBeforeCanPickup = 10;
+		EntityItem entityItem = new EntityItem(world, pos.getX(), pos.getY() + 0.5d, pos.getZ(), blockItem);
+		entityItem.setDefaultPickupDelay();
 
 		world.spawnEntityInWorld(entityItem);
 	}

@@ -3,7 +3,7 @@ package com.domochevsky.quiverbow.models;
 import net.minecraft.client.model.ModelBase;
 import net.minecraft.client.model.ModelRenderer;
 import net.minecraft.entity.Entity;
-import net.minecraft.util.ResourceLocation;
+//import net.minecraft.util.ResourceLocation; //unused?
 
 public class CoinTosser_Mod_Model extends ModelBase
 {

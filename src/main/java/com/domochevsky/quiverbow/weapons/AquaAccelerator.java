@@ -20,10 +20,14 @@ import net.minecraftforge.event.entity.player.FillBucketEvent;
 import com.domochevsky.quiverbow.Main;
 import com.domochevsky.quiverbow.projectiles.WaterShot;
 
-import cpw.mods.fml.common.event.FMLPreInitializationEvent;
-import cpw.mods.fml.common.registry.GameRegistry;
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
+import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
+import net.minecraftforge.fml.common.registry.GameRegistry;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
+
+//new imports
+import net.minecraft.block.state.IBlockState;
+
 
 public class AquaAccelerator extends _WeaponBase
 {
@@ -92,20 +96,20 @@ public class AquaAccelerator extends _WeaponBase
         {            
             if (movObj.typeOfHit == MovingObjectPosition.MovingObjectType.BLOCK)
             {
-                int x = movObj.blockX;
+                /* int x = movObj.blockX;
                 int y = movObj.blockY;
-                int z = movObj.blockZ;
+                int z = movObj.blockZ; */
 
-                if (!world.canMineBlock(player, x, y, z)) { return; }					// Not allowed to mine this, getting out of here
-                if (!player.canPlayerEdit(x, y, z, movObj.sideHit, stack)) { return; }	// Not allowed to edit this, getting out of here
+                if (!world.canMineBlockBody(player, movObj.getBlockPos())) { return; } //canMineBlock changed to canMineBlockBody // Not allowed to mine this, getting out of here
+                if (!player.canPlayerEdit(movObj.getBlockPos(), movObj.sideHit, stack)) { return; }	// Not allowed to edit this, getting out of here
 
-                Material material = world.getBlock(x, y, z).getMaterial();
-                int meta = world.getBlockMetadata(x, y, z);
+                IBlockState blockState = world.getBlockState(movObj.getBlockPos());
+                Material material = blockState.getBlock().getMaterial();
 
                 // Is this water?
-                if (material == Material.water && meta == 0)
+                if (material == Material.water && meta == 0) //seriously, is there a tutorial for meta -> blockstates or something?
                 {
-                	world.setBlockToAir(x, y, z);
+                	world.setBlockToAir(movObj.getBlockPos());
                 	stack.setItemDamage(0);
                 	
                     return;

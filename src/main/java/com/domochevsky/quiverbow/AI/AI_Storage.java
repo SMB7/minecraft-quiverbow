@@ -102,8 +102,8 @@ public class AI_Storage
 		spawner.getTagCompound().setBoolean("hasCommunicationUpgrade", turret.hasCommunicationUpgrade);
 		
 		// Saving the name
-		if (turret.hasCustomNameTag()) { spawner.setStackDisplayName(turret.getCustomNameTag()); }
-		
+		if (turret.hasCustomName()) { spawner.setStackDisplayName(turret.getCustomNameTag()); }
+		//  turret.hasCustomNameTag()
 		dropSingleItem(turret, spawner);	// Drop the packed up AA
 		dropStoredItems(turret);			// Spill your items, too
 		
@@ -211,7 +211,7 @@ public class AI_Storage
 	public static void dropSingleItem(Entity_AA turret, ItemStack stack)
 	{
 		EntityItem entityitem = new EntityItem(turret.worldObj, turret.posX, turret.posY + 1.0d, turret.posZ, stack);
-		entityitem.delayBeforeCanPickup = 10;
+		entityitem.setDefaultPickupDelay(); //entityitem.delayBeforeCanPickup = 10; //10 is the default anyway.
 		
 		// And dropping it
 		turret.worldObj.spawnEntityInWorld(entityitem);

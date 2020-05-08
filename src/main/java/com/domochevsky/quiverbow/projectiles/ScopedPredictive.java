@@ -10,10 +10,15 @@ import net.minecraft.block.material.Material;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.AxisAlignedBB;
+import net.minecraft.util.EnumParticleTypes;
 import net.minecraft.util.MathHelper;
 import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.util.Vec3;
 import net.minecraft.world.World;
+
+//new imports
+import net.minecraft.block.state.IBlockState;
+
 
 public class ScopedPredictive extends _ProjectileBase
 {
@@ -49,9 +54,9 @@ public class ScopedPredictive extends _ProjectileBase
         if (potentialBlock.getMaterial() != Material.air)
         {
             potentialBlock.setBlockBoundsBasedOnState(this.worldObj, this.stuckBlockX, this.stuckBlockY, this.stuckBlockZ);
-            AxisAlignedBB potentialAABB = potentialBlock.getCollisionBoundingBoxFromPool(this.worldObj, this.stuckBlockX, this.stuckBlockY, this.stuckBlockZ);
+            AxisAlignedBB potentialAABB = potentialBlock.getCollisionBoundingBox(this.worldObj, this.stuckBlockX, this.stuckBlockY, this.stuckBlockZ);
 
-            if (potentialAABB != null && potentialAABB.isVecInside(Vec3.createVectorHelper(this.posX, this.posY, this.posZ)))
+            if (potentialAABB != null && potentialAABB.isVecInside(new Vec3 (this.posX, this.posY, this.posZ)))
             {
                 this.inGround = true;	// Hit a non-air block, so we're now stuck in the ground
             }
@@ -63,7 +68,7 @@ public class ScopedPredictive extends _ProjectileBase
         {
         	doInGroundSFX();	// Stuck in the ground, so ground SFX is go
         	
-            int meta = this.worldObj.getBlockMetadata(this.stuckBlockX, this.stuckBlockY, this.stuckBlockZ);
+            IBlockState blockState = this.worldObj.getBlockState(this.stuckBlockX, this.stuckBlockY, this.stuckBlockZ);
 
             if (potentialBlock == this.stuckBlock && meta == this.inData)
             {
@@ -88,22 +93,22 @@ public class ScopedPredictive extends _ProjectileBase
         {
             ++this.ticksInAir;	// Aging along
             
-            Vec3 currentVec3 = Vec3.createVectorHelper(this.posX, this.posY, this.posZ);
-            Vec3 futureVec3 = Vec3.createVectorHelper(this.posX + this.motionX, this.posY + this.motionY, this.posZ + this.motionZ);
+            Vec3 currentVec3 = new Vec3(this.posX, this.posY, this.posZ);
+            Vec3 futureVec3 = new Vec3(this.posX + this.motionX, this.posY + this.motionY, this.posZ + this.motionZ);
             
-            MovingObjectPosition hitPos = this.worldObj.func_147447_a(currentVec3, futureVec3, false, true, false);
+            MovingObjectPosition hitPos = this.worldObj.func_147447_a(currentVec3, futureVec3, false, true, false); //func_147447_a
             
             // This seems to require a reset, since getRayTrace messes with them?
-            currentVec3 = Vec3.createVectorHelper(this.posX, this.posY, this.posZ);
-            futureVec3 = Vec3.createVectorHelper(this.posX + this.motionX, this.posY + this.motionY, this.posZ + this.motionZ);
+            currentVec3 = new Vec3(this.posX, this.posY, this.posZ);
+            futureVec3 = new Vec3(this.posX + this.motionX, this.posY + this.motionY, this.posZ + this.motionZ);
 
             if (hitPos != null)	// Hit something
             {
-                futureVec3 = Vec3.createVectorHelper(hitPos.hitVec.xCoord, hitPos.hitVec.yCoord, hitPos.hitVec.zCoord);
+                futureVec3 = new Vec3(hitPos.hitVec.xCoord, hitPos.hitVec.yCoord, hitPos.hitVec.zCoord);
             }
 
             Entity hitEntity = null;
-            List candidateList = this.worldObj.getEntitiesWithinAABBExcludingEntity(this, this.boundingBox.addCoord(this.motionX, this.motionY, this.motionZ).expand(1.0D, 1.0D, 1.0D));
+            List candidateList = this.worldObj.getEntitiesWithinAABBExcludingEntity(this, this.getBoundingBox().addCoord(this.motionX, this.motionY, this.motionZ).expand(1.0D, 1.0D, 1.0D));
            
             double d0 = 0.0D;
             int iteratori;
@@ -115,7 +120,7 @@ public class ScopedPredictive extends _ProjectileBase
 
                 if (potentialEntity.canBeCollidedWith() && (potentialEntity != this.shootingEntity || this.ticksInAir >= 5))
                 {
-                    AxisAlignedBB axisalignedbb1 = potentialEntity.boundingBox.expand((double) gravity, (double) gravity, (double) gravity);
+                    AxisAlignedBB axisalignedbb1 = potentialEntity.getBoundingBox().expand((double) gravity, (double) gravity, (double) gravity);
                     MovingObjectPosition potentialMovObj = axisalignedbb1.calculateIntercept(currentVec3, futureVec3);
 
                     if (potentialMovObj != null)
@@ -176,7 +181,7 @@ public class ScopedPredictive extends _ProjectileBase
             {
                 for (int l = 0; l < 4; ++l)
                 {
-                    this.worldObj.spawnParticle("bubble", this.posX - this.motionX * (double) sfxMod, 
+                    this.worldObj.spawnParticle(EnumParticleTypes.valueOf("bubble"), this.posX - this.motionX * (double) sfxMod, 
                     		this.posY - this.motionY * (double) sfxMod, 
                     		this.posZ - this.motionZ * (double) sfxMod, 
                     		this.motionX, this.motionY, this.motionZ);
@@ -205,12 +210,12 @@ public class ScopedPredictive extends _ProjectileBase
 		}
         else
         {
-        	this.stuckBlockX = hitPos.blockX;
+        	/* this.stuckBlockX = hitPos.blockX;
 	        this.stuckBlockY = hitPos.blockY;
-	        this.stuckBlockZ = hitPos.blockZ;
+	        this.stuckBlockZ = hitPos.blockZ; */
 	        
-	        this.stuckBlock = this.worldObj.getBlock(this.stuckBlockX, this.stuckBlockY, this.stuckBlockZ);
-	        this.inData = this.worldObj.getBlockMetadata(this.stuckBlockX, this.stuckBlockY, this.stuckBlockZ);
+	        this.inBlockState = this.worldObj.getBlockState(hitPos.getBlockPos());
+	        this.stuckBlock = inBlockState.getBlock();
 	        
 	        this.motionX = (double)((float)(hitPos.hitVec.xCoord - this.posX));
 	        this.motionY = (double)((float)(hitPos.hitVec.yCoord - this.posY));
@@ -231,7 +236,7 @@ public class ScopedPredictive extends _ProjectileBase
 	
 	        if (this.stuckBlock.getMaterial() != Material.air)
 	        {
-	            this.stuckBlock.onEntityCollidedWithBlock(this.worldObj, this.stuckBlockX, this.stuckBlockY, this.stuckBlockZ, this);
+	            this.stuckBlock.onEntityCollidedWithBlock(this.worldObj, hitPos.getBlockPos(), this);
 	        }
         }
 	}

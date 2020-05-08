@@ -12,12 +12,13 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.IIcon;
 import net.minecraft.world.World;
 import net.minecraftforge.common.config.Configuration;
-import cpw.mods.fml.common.event.FMLPreInitializationEvent;
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
+import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
+import net.minecraftforge.fml.common.network.NetworkCheckHandler;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 
 
-@cpw.mods.fml.common.Optional.Interface(modid = "battlegear2", iface = "mods.battlegear2.api.IUsableItem", striprefs = true)
+@net.minecraftforge.fml.common.Optional.Interface(modid = "battlegear2", iface = "mods.battlegear2.api.IUsableItem", striprefs = true)
 public class _WeaponBase extends Item //implements mods.battlegear2.api.IUsableItem
 {
     	public String uniqueName = "WEAPON BASE";				// To be identified by
@@ -122,7 +123,7 @@ public class _WeaponBase extends Item //implements mods.battlegear2.api.IUsableI
 	void setBurstFire(ItemStack stack, int amount)	// Setting our burst fire to this amount. Assumes the tag to be valid
 	{
 		if (stack.getTagCompound() == null) { stack.setTagCompound(new NBTTagCompound()); }	// Init
-		stack.stackTagCompound.setInteger("burstFireLeft", amount);
+		stack.getTagCompound().setInteger("burstFireLeft", amount); //getter is now required, stackTagCompound is now private
 	}
 
 
@@ -131,7 +132,7 @@ public class _WeaponBase extends Item //implements mods.battlegear2.api.IUsableI
 		if (stack == null) { return 0; }			// Not a valid item
 		if (!stack.hasTagCompound()) { return 0; }	// Doesn't have a tag
 
-		return stack.stackTagCompound.getInteger("burstFireLeft");
+		return stack.getTagCompound().getInteger("burstFireLeft");
 	}
 
 
@@ -200,7 +201,7 @@ public class _WeaponBase extends Item //implements mods.battlegear2.api.IUsableI
 
 
 	@Override
-	public EnumAction getItemUseAction(ItemStack stack) { return EnumAction.bow; }
+	public EnumAction getItemUseAction(ItemStack stack) { return EnumAction.BOW; } //was EnumAction.bow, I think it's just a case issue?
 
 
 	@Override

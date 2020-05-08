@@ -72,7 +72,7 @@ public class SnowShot extends _ProjectileBase
 		int y = (int) this.posY;
 		int z = (int) this.posZ;
 		
-		Block hitBlock = this.worldObj.getBlock(x, y, z);
+		Block hitBlock = this.worldObj.getBlock(x, y, z); //wonky, do later
 		
 		if (hitBlock == Blocks.water || hitBlock == Blocks.flowing_water)
 		{

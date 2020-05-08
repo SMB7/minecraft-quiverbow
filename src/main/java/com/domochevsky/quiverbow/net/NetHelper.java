@@ -10,7 +10,7 @@ import net.minecraft.world.World;
 
 import com.domochevsky.quiverbow.ArmsAssistant.Entity_AA;
 
-import cpw.mods.fml.common.network.simpleimpl.IMessage;
+import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 
 public class NetHelper 
 {    
@@ -64,7 +64,7 @@ public class NetHelper
 	public static void sendPositionMessageToPlayersInRange(World world, Entity entity, double x, double y, double z)
 	{
 		if (world.isRemote) { return; }	// Server-use only
-		AxisAlignedBB box = entity.boundingBox.expand(64, 64, 64);	
+		AxisAlignedBB box = entity.getBoundingBox().expand(64, 64, 64);	
 		List list = world.getEntitiesWithinAABBExcludingEntity(entity, box);
 		
 		int counter = 0;
@@ -110,7 +110,7 @@ public class NetHelper
 		// Step 1, who's in range?
 		if (world.isRemote) { return; }	// Server-use only
 		
-		AxisAlignedBB box = turret.boundingBox.expand(64, 64, 64);	
+		AxisAlignedBB box = turret.getBoundingBox().expand(64, 64, 64);	
 		List list = world.getEntitiesWithinAABBExcludingEntity(turret, box);
 		
 		int counter = 0;
@@ -135,7 +135,7 @@ public class NetHelper
 		// Step 1, who's in range?
 		if (world.isRemote) { return; }	// Server-use only
 		
-		AxisAlignedBB box = turret.boundingBox.expand(64, 64, 64);	
+		AxisAlignedBB box = turret.getBoundingBox().expand(64, 64, 64);	
 		List list = world.getEntitiesWithinAABBExcludingEntity(turret, box);
 		
 		int counter = 0;

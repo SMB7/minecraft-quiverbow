@@ -23,7 +23,7 @@ import com.domochevsky.quiverbow.recipes.Recipe_AA_Riding;
 import com.domochevsky.quiverbow.recipes.Recipe_AA_Storage;
 import com.domochevsky.quiverbow.recipes.Recipe_AA_Weapon;
 
-import cpw.mods.fml.common.registry.GameRegistry;
+import net.minecraftforge.fml.common.registry.GameRegistry;
 
 
 public class PackedUpAA extends _AmmoBase

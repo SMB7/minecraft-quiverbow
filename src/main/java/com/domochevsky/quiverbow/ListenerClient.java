@@ -10,9 +10,9 @@ import com.domochevsky.quiverbow.weapons.EnderRifle;
 import com.domochevsky.quiverbow.weapons.FrostLancer;
 import com.domochevsky.quiverbow.weapons._WeaponBase;
 
-import cpw.mods.fml.common.eventhandler.EventPriority;
-import cpw.mods.fml.common.eventhandler.SubscribeEvent;
-import cpw.mods.fml.common.gameevent.TickEvent.PlayerTickEvent;
+import net.minecraftforge.fml.common.eventhandler.EventPriority;
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.common.gameevent.TickEvent.PlayerTickEvent;
 
 public class ListenerClient
 {
@@ -36,7 +36,8 @@ public class ListenerClient
 		if (weapon.getCooldown(mainHand) <= 0) { return; }
 
 		RenderPlayer renderer = ((RenderPlayer) event.renderer);
-
+		
+		//TODO: I don't even know what this does, but it's broken now. Presumably it's necessary but I don't know how to fix it, I'll come back later.
 		// You are holding something
 		renderer.modelArmorChestplate.heldItemRight = 1;
 		renderer.modelArmor.heldItemRight = 1;
@@ -46,6 +47,7 @@ public class ListenerClient
 		renderer.modelArmorChestplate.aimedBow = true;
 		renderer.modelArmor.aimedBow = true;
 		renderer.modelBipedMain.aimedBow = true;
+		
 	}
 
 

@@ -11,6 +11,10 @@ import net.minecraft.world.World;
 import com.domochevsky.quiverbow.AI.AI_Properties;
 import com.domochevsky.quiverbow.ArmsAssistant.Entity_AA;
 
+//new imports
+import net.minecraft.util.EnumParticleTypes;
+
+
 public class Helper_Client 
 {
 	public static String[] PARTICLES;	// Holds the particle effect strings
@@ -72,7 +76,7 @@ public class Helper_Client
 		
 		while (count < strength)
 		{
-			world.spawnParticle(PARTICLES[particle], 
+			world.spawnParticle(EnumParticleTypes.valueOf(PARTICLES[particle]), 
 					entity.posX + entity.motionX * (double) count / 4.0D, 
 					entity.posY + entity.motionY * (double) count / 4.0D, 
 					entity.posZ + entity.motionZ * (double) count / 4.0D, 

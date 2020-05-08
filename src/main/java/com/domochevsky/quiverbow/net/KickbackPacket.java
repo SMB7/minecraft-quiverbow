@@ -2,10 +2,10 @@ package com.domochevsky.quiverbow.net;
 
 import com.domochevsky.quiverbow.Helper_Client;
 
-import net.minecraft.client.Minecraft;
-import cpw.mods.fml.common.network.simpleimpl.IMessage;
-import cpw.mods.fml.common.network.simpleimpl.IMessageHandler;
-import cpw.mods.fml.common.network.simpleimpl.MessageContext;
+//import net.minecraft.client.Minecraft; //unused?
+import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
+import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
+import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 
 public class KickbackPacket implements IMessageHandler<KickbackMessage, IMessage>
 {

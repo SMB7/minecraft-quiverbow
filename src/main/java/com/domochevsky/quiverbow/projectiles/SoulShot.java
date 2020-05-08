@@ -114,14 +114,14 @@ public class SoulShot extends _ProjectileBase
 		{ 
 			//System.out.println("[DEBUGCHEVSKY] Owner of SOUL SHOT is null. Now'd that happen?"); 
 			EntityItem entityitem = new EntityItem(this.worldObj, this.posX, this.posY + 1d, this.posZ, egg);
-	        entityitem.delayBeforeCanPickup = 10;
+	        entityitem.setDefaultPickupDelay();
 	        
 	        this.worldObj.spawnEntityInWorld(entityitem);
 		}
 		else
 		{
 			EntityItem entityitem = new EntityItem(this.worldObj, this.shootingEntity.posX, this.shootingEntity.posY + 1d, this.shootingEntity.posZ, egg);
-	        entityitem.delayBeforeCanPickup = 10;
+	        entityitem.setDefaultPickupDelay();
 	        
 	        this.worldObj.spawnEntityInWorld(entityitem);
 		}

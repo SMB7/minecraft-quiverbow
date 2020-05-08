@@ -11,7 +11,9 @@ import com.domochevsky.quiverbow.Renderer.Render_Projectile;
 import com.domochevsky.quiverbow.Renderer.Render_AA;
 import com.domochevsky.quiverbow.Renderer.Render_Weapon;
 
-import cpw.mods.fml.client.registry.RenderingRegistry;
+//new imports
+import net.minecraftforge.fml.client.registry.RenderingRegistry; //FML classes moved from cpw.mods.fml to net.minecraftforge.fml
+
 
 public class ClientProxy extends CommonProxy
 {

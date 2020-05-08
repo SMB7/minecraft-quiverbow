@@ -35,7 +35,14 @@ import com.domochevsky.quiverbow.recipes.Recipe_AA_Weapon;
 import com.domochevsky.quiverbow.recipes.Recipe_Ammo;
 import com.domochevsky.quiverbow.weapons._WeaponBase;
 
-import cpw.mods.fml.common.registry.GameRegistry;
+//new imports
+import net.minecraftforge.fml.common.registry.GameRegistry; //FML classes moved from cpw.mods.fml to net.minecraftforge.fml
+import net.minecraft.block.state.IBlockState;
+import net.minecraft.util.BlockPos;
+import net.minecraft.util.EnumFacing;
+
+//NOTE: This is a huge file that had a lot of problems, and I only sort-of know what I'm doing. If something else starts going wrong, it's probably in here.
+//Special mention to that whole blockMeta loop that starts around line ~550 or so. I hate it. It probably doesn't work.
 
 public class Helper
 {
@@ -259,9 +266,12 @@ public class Helper
 		{
 			int dur = potion.getDuration();
 			
-			entitylivingbase.addPotionEffect( new PotionEffect(pot.potion.id, pot.Duration + dur, pot.Strength - 1, false) );
+			entitylivingbase.addPotionEffect( new PotionEffect(pot.potion.id, pot.Duration + dur, pot.Strength - 1, false, true) );
 		}
-		else { entitylivingbase.addPotionEffect( new PotionEffect(pot.potion.id, pot.Duration, pot.Strength - 1, false) ); }	// Fresh
+		else { entitylivingbase.addPotionEffect( new PotionEffect(pot.potion.id, pot.Duration, pot.Strength - 1, false, true) ); }	// Fresh
+		
+		//Note: "true" added to the above two addPotionEffect() calls to match the constructor's signature, which sets showParticlesIn to true.
+		//I don't know what this does.
 	}
 	
 	
@@ -283,8 +293,9 @@ public class Helper
 			}
 		}
 		
-		Block block = world.getBlock(target.blockX, target.blockY, target.blockZ);
-		int meta = world.getBlockMetadata(target.blockX, target.blockY, target.blockZ);
+		Block block = world.getBlockState(target.getBlockPos()).getBlock();
+		//int meta = world.getBlockMetadata(target.blockX, target.blockY, target.blockZ); Metadata has been replaced with block states
+		IBlockState blockState = world.getBlockState(target.getBlockPos());
 		
 		if (block == null) { return false; }	// Didn't hit a valid block? Do we continue? Stop?
 		
@@ -392,23 +403,27 @@ public class Helper
 					if (shooter instanceof EntityPlayerMP)
 					{
 						WorldSettings.GameType gametype = world.getWorldInfo().getGameType();
-						BlockEvent.BreakEvent event = ForgeHooks.onBlockBreakEvent(world, gametype, (EntityPlayerMP) shooter, target.blockX, target.blockY, target.blockZ);
+						int eventCanceled = ForgeHooks.onBlockBreakEvent(world, gametype, (EntityPlayerMP) shooter, target.getBlockPos());
 
-						if (event.isCanceled()) { return false; }	// Not allowed to do this
+						if (eventCanceled == -1) { return false; }	// Not allowed to do this
 					}
 				}
 				else if (entity instanceof EntityPlayerMP)
 				{
 					WorldSettings.GameType gametype = entity.worldObj.getWorldInfo().getGameType();
-					BlockEvent.BreakEvent event = ForgeHooks.onBlockBreakEvent(entity.worldObj, gametype, (EntityPlayerMP) entity, target.blockX, target.blockY, target.blockZ);
+					int eventCanceled = ForgeHooks.onBlockBreakEvent(entity.worldObj, gametype, (EntityPlayerMP) entity, target.getBlockPos());
 					
-					if (event.isCanceled()) { breakThis = false; }	// Not allowed to do this
+					if (eventCanceled == -1) { breakThis = false; }	// Not allowed to do this
+					
+					/* NOTE: onBlockBreakEvent now returns an integer; -1 if the break event was canceled, and the amount of experience
+					the player should receive for breaking the block if it was not canceled. I don't know how to give them experience,
+					and for now I'm just trying to get the mod to run on later versions, but hopefully this can be added at some point.*/
 				}
 			}
 			// else, not interested in sending such a event, so whatever
 
-			world.setBlockToAir(target.blockX, target.blockY, target.blockZ);
-			block.dropBlockAsItem(world, target.blockX, target.blockY, target.blockZ, meta, 0);
+			world.setBlockToAir(target.getBlockPos());
+			block.dropBlockAsItem(world, target.getBlockPos(), blockState, 0);
 			
 			return true;	// Successfully broken
 		}
@@ -421,7 +436,9 @@ public class Helper
 	// Used for attaching the fen light to blocks
 	public static boolean hasValidMaterial(World world, int x, int y, int z)
 	{
-		Block block = world.getBlock(x, y, z);
+		
+		Block block = world.getBlockState(new BlockPos(x, y, z)).getBlock(); //importing BlockPos for this is probably sloppy but I
+																			 //wasn't sure how else to convert integers to one lol
 		
 		// Is the attached block a valid material?
 		if (block.getMaterial() == Material.clay) { return true; }
@@ -475,8 +492,9 @@ public class Helper
 	
 	public static boolean canEntityBeSeen(World world, Entity observer, Entity entity)
 	{
-		return rayTraceBlocks(world, Vec3.createVectorHelper(observer.posX, observer.posY + observer.getEyeHeight(), observer.posZ),
-				Vec3.createVectorHelper(entity.posX, entity.posY + entity.getEyeHeight(), entity.posZ)) == null;
+		return rayTraceBlocks(world, new Vec3(observer.posX, observer.posY + observer.getEyeHeight(), observer.posZ),
+				new Vec3 (entity.posX, entity.posY + entity.getEyeHeight(), entity.posZ)) == null;
+		//createVectorHelper was removed and the Vec3 constructor is now public. (I hope I did this right lol)
 	}
 	
 	
@@ -495,31 +513,41 @@ public class Helper
 				int targetPosX = MathHelper.floor_double(targetPos.xCoord);
 				int targetPosY = MathHelper.floor_double(targetPos.yCoord);
 				int targetPosZ = MathHelper.floor_double(targetPos.zCoord);
+				BlockPos targetPosAll = new BlockPos(targetPosX, targetPosY, targetPosZ);
 				
 				int observerPosX = MathHelper.floor_double(observerPos.xCoord);
 				int observerPosY = MathHelper.floor_double(observerPos.yCoord);
 				int observerPosZ = MathHelper.floor_double(observerPos.zCoord);
+				BlockPos observerPosAll = new BlockPos(observerPosX, observerPosY, observerPosZ);
+				//since a single BlockPos is needed now rather than three separate numbers
 				
-				Block block = world.getBlock(observerPosX, observerPosY, observerPosZ);
-				int blockMeta = world.getBlockMetadata(observerPosX, observerPosY, observerPosZ);
+				IBlockState blockState = world.getBlockState(observerPosAll);
+				Block block = blockState.getBlock(); //More efficient way to get the block, since you need to getBlockState to do that anyway
 
 				boolean skip = false;
 				
-				if (block.getCollisionBoundingBoxFromPool(world, observerPosX, observerPosY, observerPosZ) == null) { skip = true; }	// Has no collision box
-				else if (!block.canCollideCheck(blockMeta, p_147447_3_)) { skip = true; }						// Doesn't like being collided with
+				if (block.getCollisionBoundingBox(world, observerPosAll, blockState) == null) { skip = true; }	// Has no collision box
+				else if (!block.canCollideCheck(blockState, p_147447_3_)) { skip = true; }						// Doesn't like being collided with
 				else if (block.getMaterial() == Material.glass) { skip = true; }						// Is glass, which we can see through
 				else if (block == Blocks.glass) { skip = true; }										// Is the actual glass block
 				else if (block == Blocks.glass_pane) { skip = true; }									// Same for glass panes
 				
 				if (!skip)
 				{
-					MovingObjectPosition movingobjectposition = block.collisionRayTrace(world, observerPosX, observerPosY, observerPosZ, observerPos, targetPos);
+					MovingObjectPosition movingobjectposition = block.collisionRayTrace(world, observerPosAll, observerPos, targetPos);
 
 					if (movingobjectposition != null) { return movingobjectposition; }
 				}
 
 				MovingObjectPosition movPos2 = null;
-				blockMeta = 200;
+				int blockMeta = 200;
+				
+				/*NOTE: This is how the loop was originally implemented, by setting the block's metadata to 200 and then
+				 running this while loop while decreasing it. **I have no idea what the significance of this is.**
+				 As far as I can currently tell, the metadata was merely being used as a counter for the loop, and
+				 changing it was only important for that purpose. It'll still be used for that purpose, and still named
+				 blockMeta, for clarity. HOPEFULLY THE CHANGE FROM METADATA TO BLOCK STATES DOESN'T BREAK ANYTHING HERE,
+				 BECAUSE I DON'T KNOW WHAT IT WOULD BE. (Which of course, is why metadata as numbers was bad in the first place :P )*/
 
 				while (blockMeta-- >= 0)
 				{
@@ -563,6 +591,71 @@ public class Helper
 
 					boolean flag5 = false;
 					byte sideHit;
+					
+					//new vars for the fix explained below
+					double tempX = observerPos.xCoord;
+					double tempY = observerPos.yCoord;
+					double tempZ = observerPos.zCoord;
+
+					if (d3 < d4 && d3 < d5)
+					{
+						if (targetPosX > observerPosX) { sideHit = 4; }
+						else { sideHit = 5; }
+
+						tempX = d0;
+						tempY += d7 * d3;
+						tempZ += d8 * d3;
+					}
+					else if (d4 < d5)
+					{
+						if (targetPosY > observerPosY) { sideHit = 0; }
+						else { sideHit = 1; }
+
+						tempX += d6 * d4;
+						tempY = d1;
+						tempZ += d8 * d4;
+					}
+					else
+					{
+						if (targetPosZ > observerPosZ) { sideHit = 2; }
+						else { sideHit = 3; }
+
+						tempX += d6 * d5;
+						tempY += d7 * d5;
+						tempZ = d2;
+					}
+
+
+					Vec3 vec32 = new Vec3 (observerPos.xCoord, observerPos.yCoord, observerPos.zCoord);
+
+					observerPosX = (int)(tempX = MathHelper.floor_double(observerPos.xCoord));
+
+					if (sideHit == 5)
+					{
+						--observerPosX;
+						++tempX;
+					}
+
+					observerPosY = (int)(tempY = MathHelper.floor_double(observerPos.yCoord));
+
+					if (sideHit == 1)
+					{
+						--observerPosY;
+						++tempY;
+					}
+
+					observerPosZ = (int)(tempZ = MathHelper.floor_double(observerPos.zCoord));
+
+					if (sideHit == 3)
+					{
+						--observerPosZ;
+						++tempZ;
+					}
+					
+					
+					/* 					   //This is the original version of this check, preserved just to be safe. It no longer works, because vec3 x/y/z coords are
+					boolean flag5 = false; //now final, meaning they cannot be changed so easily. Instead, above I make all the coordinate changes first, then create a
+					byte sideHit; 		   //new vec3 and assign them to that.
 
 					if (d3 < d4 && d3 < d5)
 					{
@@ -592,7 +685,7 @@ public class Helper
 						observerPos.zCoord = d2;
 					}
 
-					Vec3 vec32 = Vec3.createVectorHelper(observerPos.xCoord, observerPos.yCoord, observerPos.zCoord);
+					Vec3 vec32 = new Vec3 (observerPos.xCoord, observerPos.yCoord, observerPos.zCoord);
 					observerPosX = (int)(vec32.xCoord = MathHelper.floor_double(observerPos.xCoord));
 
 					if (sideHit == 5)
@@ -615,14 +708,16 @@ public class Helper
 					{
 						--observerPosZ;
 						++vec32.zCoord;
-					}
+					} */
 
-					Block block1 = world.getBlock(observerPosX, observerPosY, observerPosZ);
-					int block1meta = world.getBlockMetadata(observerPosX, observerPosY, observerPosZ);
+
+					BlockPos observerPosAll1 = new BlockPos(observerPosX, observerPosY, observerPosZ);
+					IBlockState block1State = world.getBlockState(observerPosAll1);
+					Block block1 = block1State.getBlock();
 					
 					skip = false;
 					
-					if (block1.getCollisionBoundingBoxFromPool(world, observerPosX, observerPosY, observerPosZ) == null) { skip = true; }	// Has no collision box
+					if (block1.getCollisionBoundingBox(world, observerPosAll1, block1State) == null) { skip = true; }	// Has no collision box
 					//else if (!block1.canCollideCheck(l1, p_147447_3_)) { skip = true; }						// Doesn't like being collided with
 					else if (block1.getMaterial() == Material.glass) { skip = true; }						// Is glass, which we can see through
 					else if (block1 == Blocks.glass) { skip = true; }										// Is the actual glass block
@@ -630,9 +725,9 @@ public class Helper
 
 					if (!skip)
 					{
-						if (block1.canCollideCheck(block1meta, p_147447_3_))
+						if (block1.canCollideCheck(block1State, p_147447_3_))
 						{
-							MovingObjectPosition movPos1 = block1.collisionRayTrace(world, observerPosX, observerPosY, observerPosZ, observerPos, targetPos);
+							MovingObjectPosition movPos1 = block1.collisionRayTrace(world, observerPosAll1, observerPos, targetPos);
 
 							if (movPos1 != null)
 							{
@@ -641,7 +736,31 @@ public class Helper
 						}
 						else
 						{
-							movPos2 = new MovingObjectPosition(observerPosX, observerPosY, observerPosZ, sideHit, observerPos, false);
+							//movPos2 = new MovingObjectPosition(observerPosAll1, sideHit, observerPos, false);
+							//Fixed this under the assumption it was intended for MovingObjectPosition's first constructor. Hopefully that's right...
+							String facing = "";
+							switch (sideHit)
+							{
+							case 0:
+								facing = "DOWN";
+								break;
+							case 1:
+								facing = "UP";
+								break;
+							case 2:
+								facing = "NORTH";
+								break;
+							case 3:
+								facing = "SOUTH";
+								break;
+							case 4:
+								facing = "EAST";
+								break;
+							case 5:
+								facing = "WEST";
+								break;
+							}
+							movPos2 = new MovingObjectPosition(observerPos, EnumFacing.valueOf(facing), observerPosAll1);
 						}
 					}
 				}
@@ -654,14 +773,14 @@ public class Helper
 	}
 	
 	
-	@Deprecated
+	@Deprecated //I should probably have just commented this out, but I updated it instead, just in case
 	public static boolean canSeeTarget(World world, Entity observer, Entity target)
 	{
 		if (target == null) { return false; }	// Can't see what doesn't exist
 		if (target instanceof EntityPlayer && ((EntityPlayer) target).capabilities.isCreativeMode) { return false; }	// Shortcut: Never target creative mode players
 		
-		Vec3 observerPos = Vec3.createVectorHelper(observer.posX, observer.posY + observer.getEyeHeight(), observer.posZ);
-		Vec3 targetPos = Vec3.createVectorHelper(target.posX, target.posY + target.getEyeHeight(), target.posZ);
+		Vec3 observerPos = new Vec3 (observer.posX, observer.posY + observer.getEyeHeight(), observer.posZ);
+		Vec3 targetPos = new Vec3 (target.posX, target.posY + target.getEyeHeight(), target.posZ);
 		
 		// Validation, it seems
 		if (Double.isNaN(observerPos.xCoord)) { return false; }
@@ -688,8 +807,9 @@ public class Helper
 		
 		int blockCount = 0;
 		
+		BlockPos currentPosAll;
 		Block currentBlock;
-		int metadata;
+		IBlockState blockState;
 		
 		MovingObjectPosition movPos;
 		
@@ -698,13 +818,14 @@ public class Helper
 		// Only counting a certain number of blocks
 		while (!hasReachedTarget && blockCount < 200)
 		{
-			currentBlock = world.getBlock(currentPosX, currentPosY, currentPosZ);
-			metadata = world.getBlockMetadata(currentPosX, currentPosY, currentPosZ);
+			currentPosAll = new BlockPos(currentPosX, currentPosY, currentPosZ);
+			blockState = world.getBlockState(currentPosAll);
+			currentBlock = blockState.getBlock();
 			
 			boolean skip = false;	// Reset
 			
-			if (currentBlock.getCollisionBoundingBoxFromPool(world, currentPosX, currentPosY, currentPosZ) == null) { skip = true; }	// Has no collision box
-			else if (!currentBlock.canCollideCheck(metadata, false)) { skip = true; }	// Doesn't like being collided with
+			if (currentBlock.getCollisionBoundingBox(world, currentPosAll, blockState) == null) { skip = true; }	// Has no collision box
+			else if (!currentBlock.canCollideCheck(blockState, false)) { skip = true; }	// Doesn't like being collided with
 			else if (currentBlock.getMaterial() == Material.glass) { skip = true; }		// Is glass, which we can see through
 			else if (currentBlock == Blocks.glass) { skip = true; }						// Is the actual glass block
 			else if (currentBlock == Blocks.glass_pane) { skip = true; }				// Same for glass panes
@@ -713,9 +834,7 @@ public class Helper
 			{
 				movPos = currentBlock.collisionRayTrace(
 						world,
-						currentPosX,
-						currentPosY,
-						currentPosZ,
+						currentPosAll,
 						observerPos,
 						targetPos
 						);

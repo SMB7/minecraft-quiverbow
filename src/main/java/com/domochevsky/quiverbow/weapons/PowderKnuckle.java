@@ -16,10 +16,15 @@ import com.domochevsky.quiverbow.Helper;
 import com.domochevsky.quiverbow.Main;
 import com.domochevsky.quiverbow.net.NetHelper;
 
-import cpw.mods.fml.common.event.FMLPreInitializationEvent;
-import cpw.mods.fml.common.registry.GameRegistry;
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
+import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
+import net.minecraftforge.fml.common.registry.GameRegistry;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
+
+//new imports
+import net.minecraft.util.BlockPos;
+import net.minecraft.util.EnumFacing;
+
 
 public class PowderKnuckle extends _WeaponBase
 {
@@ -42,7 +47,7 @@ public class PowderKnuckle extends _WeaponBase
 
 
 	@Override
-	public boolean onItemUse(ItemStack stack, EntityPlayer player, World world, int x, int y, int z, int side, float sideX, float sideY, float sideZ)
+	public boolean onItemUse(ItemStack stack, EntityPlayer player, World world, BlockPos pos, EnumFacing side, float sideX, float sideY, float sideZ)
 	{
 		if (world.isRemote) { return false; }	// Not doing this on client side
 
@@ -51,7 +56,7 @@ public class PowderKnuckle extends _WeaponBase
 
 		if (!player.capabilities.isCreativeMode) { this.consumeAmmo(stack, player, 1); }
 
-		world.createExplosion(player, x, y, z, (float) this.ExplosionSize, true);
+		world.createExplosion(player, pos.getX(), pos.getY(), pos.getZ(), (float) this.ExplosionSize, true);
 
 		NetHelper.sendParticleMessageToAllPlayers(world, player.getEntityId(), (byte) 3, (byte) 4);	// smoke
 

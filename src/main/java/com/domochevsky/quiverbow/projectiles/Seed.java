@@ -10,6 +10,10 @@ import net.minecraft.world.World;
 
 import com.domochevsky.quiverbow.Helper;
 
+//new imports
+import net.minecraft.util.BlockPos;
+
+
 public class Seed extends _ProjectileBase
 {
 	public Seed(World world) { super(world); }
@@ -35,12 +39,13 @@ public class Seed extends _ProjectileBase
         else 
         {
         	// Hit the terrain        	
-        	int x = target.blockX;
+        	/* int x = target.blockX;
     		int y = target.blockY;
-    		int z = target.blockZ;
+    		int z = target.blockZ; */
+        	BlockPos aboveTarget = new BlockPos(target.getBlockPos().getX(), target.getBlockPos().getY() + 1, target.getBlockPos().getZ());
     		
-    		Block hitBlock = this.worldObj.getBlock(x, y, z);
-    		Block aboveHitBlock = this.worldObj.getBlock(x, y + 1, z);
+    		Block hitBlock = this.worldObj.getBlockState(target.getBlockPos()).getBlock();
+    		Block aboveHitBlock = this.worldObj.getBlockState(aboveTarget).getBlock();
     		
     		// Glass breaking
     		Helper.tryBlockBreak(this.worldObj, this, target, 0);
@@ -48,7 +53,7 @@ public class Seed extends _ProjectileBase
     		if (hitBlock == Blocks.farmland && aboveHitBlock.getMaterial() == Material.air)
     		{
     			// Hit a farmland block and the block above is free. Planting a melon seed now
-    			this.worldObj.setBlock(x, y + 1, z, Blocks.melon_stem, 0, 3);
+    			this.worldObj.setBlockState(aboveTarget, Blocks.melon_stem.getDefaultState()); //0, 3
     		}
         }
     	

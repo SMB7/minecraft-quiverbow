@@ -58,12 +58,12 @@ public class LapisShot extends _ProjectileBase
             else	// Didn't manage to break that block, so we're stuck now for a short while
             {
         	
-            	this.stuckBlockX = movPos.blockX;
+            	/* this.stuckBlockX = movPos.blockX;
                 this.stuckBlockY = movPos.blockY;
-                this.stuckBlockZ = movPos.blockZ;
+                this.stuckBlockZ = movPos.blockZ; */ //Should be able to just remove these completely, but keeping them here just in case.
                 
-                this.stuckBlock = this.worldObj.getBlock(this.stuckBlockX, this.stuckBlockY, this.stuckBlockZ);
-                this.inData = this.worldObj.getBlockMetadata(this.stuckBlockX, this.stuckBlockY, this.stuckBlockZ);
+                this.inBlockState = this.worldObj.getBlockState(movPos.getBlockPos());
+                this.stuckBlock = this.inBlockState.getBlock();
                 
                 this.motionX = (double)((float)(movPos.hitVec.xCoord - this.posX));
                 this.motionY = (double)((float)(movPos.hitVec.yCoord - this.posY));
@@ -81,7 +81,7 @@ public class LapisShot extends _ProjectileBase
 
                 if (this.stuckBlock.getMaterial() != Material.air)
                 {
-                    this.stuckBlock.onEntityCollidedWithBlock(this.worldObj, this.stuckBlockX, this.stuckBlockY, this.stuckBlockZ, this);
+                    this.stuckBlock.onEntityCollidedWithBlock(this.worldObj, movPos.getBlockPos(), this);
                 }
             }
 		}

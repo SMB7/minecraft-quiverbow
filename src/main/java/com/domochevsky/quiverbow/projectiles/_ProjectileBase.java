@@ -18,8 +18,14 @@ import net.minecraft.world.World;
 import com.domochevsky.quiverbow.Helper;
 import com.domochevsky.quiverbow.net.NetHelper;
 
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
+
+//new imports
+import net.minecraft.util.BlockPos;
+import net.minecraft.util.EnumParticleTypes;
+import net.minecraft.block.state.IBlockState;
+
 
 public class _ProjectileBase extends Entity implements IProjectile
 {
@@ -31,9 +37,12 @@ public class _ProjectileBase extends Entity implements IProjectile
 	public int stuckBlockX = -1;
 	public int stuckBlockY = -1;
 	public int stuckBlockZ = -1;
+	//new, to put stuckBlockX/Y/Z into a BlockPos
+	public BlockPos stuckBlockPos = new BlockPos(stuckBlockX, stuckBlockY, stuckBlockZ);
     
 	public Block stuckBlock;
-	public int inData;	// metadata of the block we're stuck in
+	public int inData;	// metadata of the block we're stuck in (outdated)
+	public IBlockState inBlockState;
 	
 	public EntityLivingBase shootingEntity;
 	
@@ -84,7 +93,7 @@ public class _ProjectileBase extends Entity implements IProjectile
         
         this.setPosition(this.posX, this.posY, this.posZ);
         
-        this.yOffset = 0.0F;
+        //this.yOffset = 0.0F; //has yOffset been removed from Entity (or IProjectile)?
         
         //this.motionX = (double)(-MathHelper.sin(this.rotationYaw / 180.0F * (float)Math.PI) * MathHelper.cos(this.rotationPitch / 180.0F * (float)Math.PI));
         //this.motionZ = (double)(MathHelper.cos(this.rotationYaw / 180.0F * (float)Math.PI) * MathHelper.cos(this.rotationPitch / 180.0F * (float)Math.PI));
@@ -149,7 +158,7 @@ public class _ProjectileBase extends Entity implements IProjectile
 
 	@Override
 	@SideOnly(Side.CLIENT)
-    public void setPositionAndRotation2(double x, double y, double z, float yaw, float pitch, int unknown)
+    public void setPositionAndRotation(double x, double y, double z, float yaw, float pitch) //setPositionAndRotation2(double x, double y, double z, float yaw, float pitch, int unknown)
     {
         this.setPosition(x, y, z);
         this.setRotation(yaw, pitch);
@@ -174,14 +183,15 @@ public class _ProjectileBase extends Entity implements IProjectile
             this.prevRotationPitch = this.rotationPitch = (float)(Math.atan2(this.motionY, (double)f) * 180.0D / Math.PI);
         }
 
-        Block potentialBlock = this.worldObj.getBlock(this.stuckBlockX, this.stuckBlockY, this.stuckBlockZ);
+        this.stuckBlockPos = new BlockPos(stuckBlockX, stuckBlockY, stuckBlockZ);
+        Block potentialBlock = this.worldObj.getBlockState(this.stuckBlockPos).getBlock();
 
         if (potentialBlock.getMaterial() != Material.air)
         {
-            potentialBlock.setBlockBoundsBasedOnState(this.worldObj, this.stuckBlockX, this.stuckBlockY, this.stuckBlockZ);
-            AxisAlignedBB potentialAABB = potentialBlock.getCollisionBoundingBoxFromPool(this.worldObj, this.stuckBlockX, this.stuckBlockY, this.stuckBlockZ);
+            potentialBlock.setBlockBoundsBasedOnState(this.worldObj, this.stuckBlockPos);
+            AxisAlignedBB potentialAABB = potentialBlock.getCollisionBoundingBox(this.worldObj, this.stuckBlockPos, this.worldObj.getBlockState(stuckBlockPos));
 
-            if (potentialAABB != null && potentialAABB.isVecInside(Vec3.createVectorHelper(this.posX, this.posY, this.posZ)))
+            if (potentialAABB != null && potentialAABB.isVecInside(new Vec3(this.posX, this.posY, this.posZ)))
             {
                 this.inGround = true;	// Hit a non-air block, so we're now stuck in the ground
             }
@@ -203,9 +213,9 @@ public class _ProjectileBase extends Entity implements IProjectile
          		this.netCooldown -= 1;	// One tick less
          	}
         	
-            int meta = this.worldObj.getBlockMetadata(this.stuckBlockX, this.stuckBlockY, this.stuckBlockZ);
+            IBlockState blockState = this.worldObj.getBlockState(this.stuckBlockPos);
 
-            if (potentialBlock == this.stuckBlock && meta == this.inData)
+            if (potentialBlock == this.stuckBlock && blockState == this.inBlockState)
             {
                 ++this.ticksInGround;
 
@@ -228,22 +238,22 @@ public class _ProjectileBase extends Entity implements IProjectile
         {
             ++this.ticksInAir;	// Aging along
             
-            Vec3 currentVec3 = Vec3.createVectorHelper(this.posX, this.posY, this.posZ);
-            Vec3 futureVec3 = Vec3.createVectorHelper(this.posX + this.motionX, this.posY + this.motionY, this.posZ + this.motionZ);
+            Vec3 currentVec3 = new Vec3(this.posX, this.posY, this.posZ);
+            Vec3 futureVec3 = new Vec3(this.posX + this.motionX, this.posY + this.motionY, this.posZ + this.motionZ);
             
-            MovingObjectPosition hitPos = this.worldObj.func_147447_a(currentVec3, futureVec3, false, true, false);
+            MovingObjectPosition hitPos = this.worldObj.rayTraceBlocks(currentVec3, futureVec3, false, true, false); //was this.worldObj.func_147447_a
             
             // This seems to require a reset, since getRayTrace messes with them?
-            currentVec3 = Vec3.createVectorHelper(this.posX, this.posY, this.posZ);
-            futureVec3 = Vec3.createVectorHelper(this.posX + this.motionX, this.posY + this.motionY, this.posZ + this.motionZ);
+            currentVec3 = new Vec3(this.posX, this.posY, this.posZ);
+            futureVec3 = new Vec3 (this.posX + this.motionX, this.posY + this.motionY, this.posZ + this.motionZ);
 
             if (hitPos != null)	// Hit something
             {
-                futureVec3 = Vec3.createVectorHelper(hitPos.hitVec.xCoord, hitPos.hitVec.yCoord, hitPos.hitVec.zCoord);
+                futureVec3 = new Vec3(hitPos.hitVec.xCoord, hitPos.hitVec.yCoord, hitPos.hitVec.zCoord);
             }
 
             Entity hitEntity = null;
-            List candidateList = this.worldObj.getEntitiesWithinAABBExcludingEntity(this, this.boundingBox.addCoord(this.motionX, this.motionY, this.motionZ).expand(1.0D, 1.0D, 1.0D));
+            List candidateList = this.worldObj.getEntitiesWithinAABBExcludingEntity(this, this.getBoundingBox().addCoord(this.motionX, this.motionY, this.motionZ).expand(1.0D, 1.0D, 1.0D));
            
             double d0 = 0.0D;
             int iteratori;
@@ -254,8 +264,8 @@ public class _ProjectileBase extends Entity implements IProjectile
                 Entity potentialEntity = (Entity)candidateList.get(iteratori);
 
                 if (potentialEntity.canBeCollidedWith() && (potentialEntity != this.shootingEntity || this.ticksInAir >= 5) && !(potentialEntity instanceof EntityPlayer))
-                {
-                    AxisAlignedBB axisalignedbb1 = potentialEntity.boundingBox.expand((double) gravity, (double) gravity, (double) gravity);
+                {								//AxisAlignedBB box = entity.getBoundingBox().expand(64, 64, 64);	
+                    AxisAlignedBB axisalignedbb1 = potentialEntity.getBoundingBox().expand((double) gravity, (double) gravity, (double) gravity);
                     MovingObjectPosition potentialMovObj = axisalignedbb1.calculateIntercept(currentVec3, futureVec3);
 
                     if (potentialMovObj != null)
@@ -319,7 +329,7 @@ public class _ProjectileBase extends Entity implements IProjectile
             {
                 for (int l = 0; l < 4; ++l)
                 {
-                    this.worldObj.spawnParticle("bubble", this.posX - this.motionX * (double) sfxMod, 
+                    this.worldObj.spawnParticle(EnumParticleTypes.valueOf("bubble"), this.posX - this.motionX * (double) sfxMod, 
                     		this.posY - this.motionY * (double) sfxMod, 
                     		this.posZ - this.motionZ * (double) sfxMod, 
                     		this.motionX, this.motionY, this.motionZ);
@@ -345,8 +355,8 @@ public class _ProjectileBase extends Entity implements IProjectile
             this.setPosition(this.posX, this.posY, this.posZ);	// Position update
             //NetHelper.sendPositionMessageToAllPlayers(this.worldObj, this.getEntityId(), this.posX, this.posY, this.posZ);	// Informing the client about our position change explicitly
             
-            this.func_145775_I();	// block collision
-        }
+            this.doBlockCollisions();	// block collision
+        } //this.func_145775_I();
     }
 	
 	

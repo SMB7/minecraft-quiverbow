@@ -19,10 +19,10 @@ import com.domochevsky.quiverbow.ammo.Part_GatlingBarrel;
 import com.domochevsky.quiverbow.ammo.Part_GatlingBody;
 import com.domochevsky.quiverbow.projectiles.SugarRod;
 
-import cpw.mods.fml.common.event.FMLPreInitializationEvent;
-import cpw.mods.fml.common.registry.GameRegistry;
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
+import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
+import net.minecraftforge.fml.common.registry.GameRegistry;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 
 public class SugarEngine extends _WeaponBase
 {
@@ -73,9 +73,9 @@ public class SugarEngine extends _WeaponBase
 	{
 		if (!stack.hasTagCompound()) { stack.setTagCompound(new NBTTagCompound()); }
 		// Weapon is ready, so we can spin up now. set spin-down immunity to x ticks and spin up
-		stack.stackTagCompound.setInteger("spinDownImmunity", 20);	// Can't spin down for 20 ticks. Also indicates our desire to spin up
+		stack.getTagCompound().setInteger("spinDownImmunity", 20);	// Can't spin down for 20 ticks. Also indicates our desire to spin up
 
-		if (stack.stackTagCompound.getInteger("spinning") < this.getSpinupTime()) { return; } // Not ready yet, so keep spinning up
+		if (stack.getTagCompound().getInteger("spinning") < this.getSpinupTime()) { return; } // Not ready yet, so keep spinning up
 		// else, we're ready
 
 		this.setBurstFire(stack, 4);		// Setting the rods left to fire to 4, then going through that via onUpdate (Will be constantly refreshed if we're still spinning)
@@ -96,7 +96,7 @@ public class SugarEngine extends _WeaponBase
 
 		// Creating the clip
 		EntityItem entityitem = new EntityItem(world, entity.posX, entity.posY + 1.0d, entity.posZ, clipStack);
-		entityitem.delayBeforeCanPickup = 10;
+		entityitem.setDefaultPickupDelay();
 
 		// And dropping it
 		if (entity.captureDrops) { entity.capturedDrops.add(entityitem); }
@@ -117,11 +117,11 @@ public class SugarEngine extends _WeaponBase
 
 		if (stack.getTagCompound() == null) { stack.setTagCompound(new NBTTagCompound()); }	// Init
 
-		if (stack.stackTagCompound.getInteger("spinDownImmunity") == 0)	// Not firing and no immunity left, so spinning down
+		if (stack.getTagCompound().getInteger("spinDownImmunity") == 0)	// Not firing and no immunity left, so spinning down
 		{
-			if (stack.stackTagCompound.getInteger("spinning") > 0)
+			if (stack.getTagCompound().getInteger("spinning") > 0)
 			{
-				stack.stackTagCompound.setInteger("spinning", stack.stackTagCompound.getInteger("spinning") - 1);
+				stack.getTagCompound().setInteger("spinning", stack.getTagCompound().getInteger("spinning") - 1);
 
 				this.doSpinSFX(stack, world, entity);
 			}
@@ -129,12 +129,12 @@ public class SugarEngine extends _WeaponBase
 		}
 		else	// We're currently immune to spinning down, so decreasing that immunity time until we actually can
 		{
-			stack.stackTagCompound.setInteger("spinDownImmunity", stack.stackTagCompound.getInteger("spinDownImmunity") - 1);
+			stack.getTagCompound().setInteger("spinDownImmunity", stack.getTagCompound().getInteger("spinDownImmunity") - 1);
 
 			// Also assuming that we're trying to fire, so spinning up (This is a workaround for the fact that onRightClick isn't called every tick)
-			if (stack.stackTagCompound.getInteger("spinning") < this.getSpinupTime())
+			if (stack.getTagCompound().getInteger("spinning") < this.getSpinupTime())
 			{
-				stack.stackTagCompound.setInteger("spinning", stack.stackTagCompound.getInteger("spinning") + 1);
+				stack.getTagCompound().setInteger("spinning", stack.getTagCompound().getInteger("spinning") + 1);
 			}
 			// else, we've reached full spin
 
@@ -182,7 +182,7 @@ public class SugarEngine extends _WeaponBase
 	private void doSpinSFX(ItemStack stack, World world, Entity player)
 	{
 		// SFX
-		int spin = stack.stackTagCompound.getInteger("spinning");
+		int spin = stack.getTagCompound().getInteger("spinning");
 
 		float volume = 0.8F;
 		float pitch = 1.8F;

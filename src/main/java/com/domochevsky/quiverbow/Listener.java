@@ -6,12 +6,12 @@ import net.minecraft.item.ItemStack;
 import com.domochevsky.quiverbow.weapons.ERA;
 import com.domochevsky.quiverbow.weapons._WeaponBase;
 
-import cpw.mods.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
 public class Listener
 {
 	@SubscribeEvent
-	public void ItemCraftedEvent(cpw.mods.fml.common.gameevent.PlayerEvent.ItemCraftedEvent event)
+	public void ItemCraftedEvent(net.minecraftforge.fml.common.gameevent.PlayerEvent.ItemCraftedEvent event)
 	{
 		//System.out.println("[EVENT] Player crafted something.");
 

@@ -16,10 +16,10 @@ import net.minecraftforge.common.config.Configuration;
 import com.domochevsky.quiverbow.Main;
 import com.domochevsky.quiverbow.projectiles.Seed;
 
-import cpw.mods.fml.common.event.FMLPreInitializationEvent;
-import cpw.mods.fml.common.registry.GameRegistry;
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
+import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
+import net.minecraftforge.fml.common.registry.GameRegistry;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 
 public class Seedling extends _WeaponBase
 {
@@ -90,13 +90,13 @@ public class Seedling extends _WeaponBase
 		stack.stackSize = 0;
 		
 		EntityItem piston = new EntityItem(world, player.posX, player.posY + 1.0F, player.posZ, new ItemStack(Blocks.piston));
-		piston.delayBeforeCanPickup = 10;
+		piston.setDefaultPickupDelay();
 		
 		if (player.captureDrops) { player.capturedDrops.add(piston); }
 		else { world.spawnEntityInWorld(piston); }
 		
 		EntityItem hook = new EntityItem(world, player.posX, player.posY + 1.0F, player.posZ, new ItemStack(Blocks.tripwire_hook));
-		hook.delayBeforeCanPickup = 10;
+		hook.setDefaultPickupDelay();
 		
 		if (player.captureDrops) { player.capturedDrops.add(hook); }
 		else { world.spawnEntityInWorld(hook); }

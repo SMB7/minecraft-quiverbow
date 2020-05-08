@@ -23,10 +23,10 @@ import com.domochevsky.quiverbow.projectiles.EnderAccelerator;
 import com.domochevsky.quiverbow.recipes.Recipe_ERA;
 import com.domochevsky.quiverbow.recipes.Recipe_Weapon;
 
-import cpw.mods.fml.common.event.FMLPreInitializationEvent;
-import cpw.mods.fml.common.registry.GameRegistry;
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
+import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
+import net.minecraftforge.fml.common.registry.GameRegistry;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 
 public class ERA extends _WeaponBase
 {
@@ -339,8 +339,8 @@ public class ERA extends _WeaponBase
 	@Override
 	public EnumRarity getRarity(ItemStack stack)
     {
-		if (stack.hasTagCompound() && stack.getTagCompound().getBoolean("hasEmeraldMuzzle")) { return EnumRarity.rare; }
+		if (stack.hasTagCompound() && stack.getTagCompound().getBoolean("hasEmeraldMuzzle")) { return EnumRarity.RARE; }
         
-        return EnumRarity.common;	// Default
+        return EnumRarity.COMMON;	// Default	//apparent caps issue again
     }
 }

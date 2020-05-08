@@ -48,8 +48,8 @@ public class CoinShot extends _ProjectileBase
         }
         else 
         {        	
-        	Block block = this.worldObj.getBlock(hitPos.blockX, hitPos.blockY, hitPos.blockZ);
-			
+        	Block block = this.worldObj.getBlockState(hitPos.getBlockPos()).getBlock(); //unused?
+        	
         	// Glass breaking
             Helper.tryBlockBreak(this.worldObj, this, hitPos, 1);
             
@@ -60,8 +60,11 @@ public class CoinShot extends _ProjectileBase
             	if (this.shouldDrop && !player.capabilities.isCreativeMode)
             	{            		
     	        	ItemStack nuggetStack = new ItemStack(Items.gold_nugget);
-    	        	EntityItem entityitem = new EntityItem(this.worldObj, hitPos.blockX, hitPos.blockY + (double)0.5F, hitPos.blockZ, nuggetStack);
-    	            entityitem.delayBeforeCanPickup = 10;
+    	        	EntityItem entityitem = new EntityItem(this.worldObj,
+    	        										   hitPos.getBlockPos().getX(),
+    	        										   hitPos.getBlockPos().getY() + (double)0.5F,
+    	        										   hitPos.getBlockPos().getZ(), nuggetStack);
+    	            entityitem.setDefaultPickupDelay(); //reminder: default delay is 10 anyway, which is what this originally set it to
     	            
     	            if (captureDrops) { capturedDrops.add(entityitem); }
     	            else { this.worldObj.spawnEntityInWorld(entityitem); }

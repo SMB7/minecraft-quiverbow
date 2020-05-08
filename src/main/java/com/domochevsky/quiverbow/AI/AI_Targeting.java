@@ -114,7 +114,7 @@ public class AI_Targeting
 		// Having a gander
 		turret.targetDelay = 20;	// Reset for next tick
 		
-		AxisAlignedBB box = turret.boundingBox.expand(turret.attackDistance, turret.attackDistance, turret.attackDistance);
+		AxisAlignedBB box = turret.getBoundingBox().expand(turret.attackDistance, turret.attackDistance, turret.attackDistance);
 		
 		List list = turret.worldObj.getEntitiesWithinAABB(EntityLivingBase.class, box);
 		
@@ -207,8 +207,8 @@ public class AI_Targeting
 		if (entity instanceof EntityPlayer)
 		{
 			EntityPlayer player = (EntityPlayer) entity;
-			if (player.getDisplayName().equals(turret.ownerName)) { return true; }	// Not shooting at my owner
-		}
+			if (player.getDisplayName().toString().equals(turret.ownerName)) { return true; }	// Not shooting at my owner
+		} //player.getDisplayName now returns an IChatComponent that has to be converted to a string for comparison
 		
 		return false;
 	}
@@ -220,7 +220,7 @@ public class AI_Targeting
 		{
 			EntityPlayer player = (EntityPlayer) entity;
 			
-			if (isNameOnWhitelist(turret, player.getDisplayName())) { return true; }	// Not shooting at their friends either
+			if (isNameOnWhitelist(turret, player.getDisplayName().toString())) { return true; }	// Not shooting at their friends either
 			else if (isNameOnWhitelist(turret, "player")) { return true; }				// Not shooting at players in general
 		}
 		
@@ -264,7 +264,7 @@ public class AI_Targeting
 		{
 			EntityLiving living = (EntityLiving) entity;
 			
-			if (living.hasCustomNameTag())
+			if (living.hasCustomName()) //hasCustomNameTag seems to have been renamed, for whatever reason
 			{
 				if (isNameOnWhitelist(turret, living.getCustomNameTag())) { return true; }
 			}
@@ -385,7 +385,7 @@ public class AI_Targeting
 		double playerY = player.prevPosY + (player.posY - player.prevPosY) * f + (world.isRemote ? player.getEyeHeight() - player.getDefaultEyeHeight() : player.getEyeHeight()); // isRemote check to revert changes to ray trace position due to adding the eye height clientside and player yOffset differences
 		double playerZ = player.prevPosZ + (player.posZ - player.prevPosZ) * f;
 		
-		Vec3 vecPlayer = Vec3.createVectorHelper(playerX, playerY, playerZ);
+		Vec3 vecPlayer = new Vec3 (playerX, playerY, playerZ);
 		
 		float f3 = MathHelper.cos(-f2 * 0.017453292F - (float)Math.PI);
 		float f4 = MathHelper.sin(-f2 * 0.017453292F - (float)Math.PI);
@@ -398,8 +398,8 @@ public class AI_Targeting
 		
 		Vec3 vecTarget = vecPlayer.addVector(f7 * maxDistance, f6 * maxDistance, f8 * maxDistance);
 		
-		return world.func_147447_a(vecPlayer, vecTarget, false, false, true);	// false, true, false
-	}
+		return world.rayTraceBlocks(vecPlayer, vecTarget, false, false, true);	// false, true, false
+	}   //originally was world.func_147447_a, which seems to now be rayTraceBlocks? Would be a sensible thing to use for targeting, I suppose
 	
 	
 	private static double getSafetyRange(Entity_AA turret, _WeaponBase currentWeapon)

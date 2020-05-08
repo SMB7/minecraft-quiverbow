@@ -12,6 +12,11 @@ import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 
+//new imports
+import net.minecraft.util.BlockPos;
+import net.minecraft.util.EnumParticleTypes;
+import net.minecraft.block.state.IBlockState;
+
 public class FenLight extends Block
 {
 	float size = 0.25F;
@@ -26,14 +31,14 @@ public class FenLight extends Block
 		this.setResistance(10.0F);
 		this.setStepSound(soundTypeGlass);
 		this.setCreativeTab(CreativeTabs.tabDecorations);
-		this.setBlockTextureName("glowstone");
-		this.setBlockName("Fen Light");
+		this.setBlockTextureName("glowstone"); //more JSON stuff. This'll be fun when I get around to it (:
+		this.setUnlocalizedName("FenLight"); //setBlockName no longer exists. I don't know if removing the space was necessary but we're going with it for now.
 		//this.setBlockBounds(sizeMin, sizeMin, sizeMin, sizeMax, sizeMax, sizeMax);
 	}
 	
 	
 	@Override
-	public AxisAlignedBB getCollisionBoundingBoxFromPool(World world, int x, int y, int z)
+	public AxisAlignedBB getCollisionBoundingBox(World world, BlockPos pos, IBlockState state)
     {
 		// Let's try a small cube for starters EDIT: Let's not. No stepping stones here
         /*return AxisAlignedBB.getAABBPool().getAABB(
@@ -44,15 +49,16 @@ public class FenLight extends Block
     }
 	
 	@Override
-	public void setBlockBoundsBasedOnState(IBlockAccess world, int x, int y, int z)
+	public void setBlockBoundsBasedOnState(IBlockAccess world, BlockPos pos)
     {
-		int meta = world.getBlockMetadata(x, y, z);
+		IBlockState blockState = world.getBlockState(pos);
 		
 		float plusX = 0;
 		float plusY = 0;
 		float plusZ = 0;
 		
-		if (meta == 0)	{ plusY = 0.375F; }			// Bottom, so need to move to the top
+		//TODO: This shit needs to change and I have no idea what to do with it because Forge's RTD explanation of blockstates doesn't explain them very well
+		if (pos.(blockState) == 0)	{ plusY = 0.375F; }			// Bottom, so need to move to the top
 		else if (meta == 1) { plusY = -0.375F; } 	// Top, so need to move to the bottom
 		else if (meta == 2) { plusZ = 0.375F; }		// East, so need to move west
 		else if (meta == 3) { plusZ = -0.375F; }	// West, so need to move east
@@ -68,13 +74,13 @@ public class FenLight extends Block
 	
 	
 	@Override
-	public void onNeighborBlockChange(World world, int x, int y, int z, Block block)
+	public void onNeighborChange(IBlockAccess world, BlockPos posHome, BlockPos posNeighbor)
     {
-		if (!world.isRemote)
+		if (!world.isRemote) //Not sure how to replace this yet, might need SideOnly
 		{
 			// Checking here to see if the block we're attached to is valid (and breaking if it isn't)
-			int meta = world.getBlockMetadata(x, y, z);	// Contains the side we're attached to
-			
+			IBlockState homeState = world.getBlockState(posHome);	// Contains the side we're attached to
+			//TODO: see last todo
 			if (meta == 0) { if ( !Helper.hasValidMaterial(world, x, y + 1, z) ) { world.setBlockToAir(x, y, z); } } // Bottom, checking Top
 			else if (meta == 1) { if ( !Helper.hasValidMaterial(world, x, y - 1, z) ) { world.setBlockToAir(x, y, z); } } // Top, checking Bottom
 			else if (meta == 2) { if ( !Helper.hasValidMaterial(world, x, y, z + 1) ) { world.setBlockToAir(x, y, z); } }	// East
@@ -86,19 +92,19 @@ public class FenLight extends Block
 	
 	
 	@Override
-	public void updateTick(World world, int x, int y, int z, Random rand) 
+	public void updateTick(World world, BlockPos blockPos, IBlockState blockState, Random rand) 
 	{
 		// If this gets called then someone wants the light to turn back into air, since the timer ran out
 		if (!world.isRemote) 
 		{ 
-			world.setBlockToAir(x, y, z); 
+			world.setBlockToAir(blockPos); 
 			
 			// SFX
-	    	for (int i = 0; i < 8; ++i) { world.spawnParticle("slime", x, y, z, 0.0D, 0.0D, 0.0D); }
-		}
+	    	for (int i = 0; i < 8; ++i) { world.spawnParticle(EnumParticleTypes.valueOf("slime"), blockPos.getX(), blockPos.getY(), blockPos.getZ(), 0.0D, 0.0D, 0.0D); }
+		} //I feel like the int at the end is missing but eclipse stopped giving errors so I'm leaving it for now
 	}
 	
 	
 	@Override
-	public Item getItemDropped(int par1, Random par2rand, int par3) { return null; } // Dropping nothing. We're gonna stay behind the scenes
+	public Item getItemDropped(IBlockState blockState, Random rand, int fortune) { return null; } // Dropping nothing. We're gonna stay behind the scenes
 }

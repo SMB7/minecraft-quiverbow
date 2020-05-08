@@ -11,7 +11,11 @@ import net.minecraft.world.World;
 import com.domochevsky.quiverbow.Helper;
 import com.domochevsky.quiverbow.net.NetHelper;
 
-import cpw.mods.fml.common.registry.IEntityAdditionalSpawnData;
+import net.minecraftforge.fml.common.registry.IEntityAdditionalSpawnData;
+
+//new imports
+import net.minecraft.util.BlockPos;
+
 
 public class SunLight extends _ProjectileBase implements IEntityAdditionalSpawnData
 {
@@ -59,7 +63,8 @@ public class SunLight extends _ProjectileBase implements IEntityAdditionalSpawnD
         }
 		else 
         { 
-        	Block block = this.worldObj.getBlock(target.blockX, target.blockY, target.blockZ);
+        	Block block = this.worldObj.getBlockState(target.getBlockPos()).getBlock();
+        	BlockPos aboveTarget = new BlockPos(target.getBlockPos().getX(), target.getBlockPos().getY() + 1, target.getBlockPos().getZ());
 			
 			// Glass breaking
         	Helper.tryBlockBreak(this.worldObj, this, target, 2);	// Strong
@@ -67,10 +72,10 @@ public class SunLight extends _ProjectileBase implements IEntityAdditionalSpawnD
         	// Let's create fire here
         	if (block != Blocks.fire)
         	{
-        		if (this.worldObj.getBlock(target.blockX, target.blockY + 1, target.blockZ).isAir(this.worldObj, target.blockX, target.blockY + 1, target.blockZ))
+        		if (this.worldObj.getBlockState(aboveTarget).getBlock().isAir(this.worldObj, aboveTarget))
 	        	{
 	        		// the block above the block we hit is air, so let's set it on fire!
-	        		this.worldObj.setBlock(target.blockX, target.blockY + 1, target.blockZ, Blocks.fire, 0, 3);
+	        		this.worldObj.setBlockState(aboveTarget, Blocks.fire.getDefaultState()); //0, 3
 	        	}
         		// else, not an airblock above this
         	}
@@ -78,12 +83,12 @@ public class SunLight extends _ProjectileBase implements IEntityAdditionalSpawnD
         	// Have we hit snow? Turning that into snow layer
         	else if (block == Blocks.snow)
         	{
-        		this.worldObj.setBlock(target.blockX, target.blockY, target.blockZ, Blocks.snow_layer, 7, 3);
+        		this.worldObj.setBlockState(target.getBlockPos(), Blocks.snow_layer.getDefaultState()); //7, 3
         	}
         	
         	// Have we hit snow layer? Melting that down into nothing
         	else if (block == Blocks.snow_layer)
-        	{
+        	{ //need to figure out how snow height is represented with blockstates
         		int currentMeta = this.worldObj.getBlockMetadata(target.blockX, target.blockY, target.blockZ);
         		// Is this taller than 0? Melting it down then
         		if (currentMeta > 0) { this.worldObj.setBlock(target.blockX, target.blockY, target.blockZ, Blocks.snow_layer, currentMeta - 1, 3); }
@@ -94,13 +99,13 @@ public class SunLight extends _ProjectileBase implements IEntityAdditionalSpawnD
         	// Have we hit ice? Turning that into water
         	else if (block == Blocks.ice)
         	{
-        		this.worldObj.setBlock(target.blockX, target.blockY, target.blockZ, Blocks.water, 0, 3);
+        		this.worldObj.setBlockState(target.getBlockPos(), Blocks.water.getDefaultState()); // 0, 3
         	}
         	
         	// Have we hit (flowing) water? Evaporating that
         	else if (block == Blocks.water || block == Blocks.flowing_water)
         	{
-        		this.worldObj.setBlockToAir(target.blockX, target.blockY, target.blockZ);
+        		this.worldObj.setBlockToAir(target.getBlockPos());
         	}
         }
 		

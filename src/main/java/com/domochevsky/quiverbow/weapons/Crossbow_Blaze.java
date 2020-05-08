@@ -8,6 +8,7 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumChatFormatting;
+import net.minecraft.util.EnumParticleTypes;
 import net.minecraft.world.World;
 import net.minecraftforge.common.config.Configuration;
 
@@ -15,10 +16,10 @@ import com.domochevsky.quiverbow.Helper;
 import com.domochevsky.quiverbow.Main;
 import com.domochevsky.quiverbow.projectiles.BlazeShot;
 
-import cpw.mods.fml.common.event.FMLPreInitializationEvent;
-import cpw.mods.fml.common.registry.GameRegistry;
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
+import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
+import net.minecraftforge.fml.common.registry.GameRegistry;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 
 public class Crossbow_Blaze extends _WeaponBase
 {
@@ -75,7 +76,7 @@ public class Crossbow_Blaze extends _WeaponBase
 
 		// SFX
 		world.playSoundAtEntity(entity, "random.wood_click", 1.0F, 0.5F);
-		world.spawnParticle("smoke", entity.posX, entity.posY + 0.5D, entity.posZ, 0.0D, 0.0D, 0.0D);
+		world.spawnParticle(EnumParticleTypes.valueOf("smoke"), entity.posX, entity.posY + 0.5D, entity.posZ, 0.0D, 0.0D, 0.0D);
 
 		this.consumeAmmo(stack, entity, 1);
 		this.setCooldown(stack, 10);
